@@ -1,0 +1,77 @@
+:root {
+  --bg: #eef6f0;
+  --page-bg: #eef6f0;
+  --bg-elevated: #e6f5ea;
+  --bg-muted: #dfeee3;
+  --text: #4b5f54;
+  --text-h: #10201a;
+  --border: #cfe3d6;
+  --border-muted: #b9d8c3;
+  --accent: #059669;
+  --accent-bg: rgba(5, 150, 105, 0.1);
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  font: 16px/145% var(--sans);
+  color-scheme: light dark;
+  color: var(--text);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101915;
+    --page-bg: #101915;
+    --bg-elevated: #1b2b23;
+    --bg-muted: #14201a;
+    --text: #a8c2b3;
+    --text-h: #eaf5ee;
+    --border: #2e4038;
+    --border-muted: #24352d;
+    --accent: #34d399;
+    --accent-bg: rgba(52, 211, 153, 0.14);
+  }
+}
+
+/* Manual override wins over OS preference — higher specificity than the plain
+   :root inside the media query, so no !important needed. */
+:root[data-theme='light'] {
+  --bg: #eef6f0;
+  --page-bg: #eef6f0;
+  --bg-elevated: #e6f5ea;
+  --bg-muted: #dfeee3;
+  --text: #4b5f54;
+  --text-h: #10201a;
+  --border: #cfe3d6;
+  --border-muted: #b9d8c3;
+  --accent: #059669;
+  --accent-bg: rgba(5, 150, 105, 0.1);
+}
+
+:root[data-theme='dark'] {
+  --bg: #101915;
+  --page-bg: #101915;
+  --bg-elevated: #1b2b23;
+  --bg-muted: #14201a;
+  --text: #a8c2b3;
+  --text-h: #eaf5ee;
+  --border: #2e4038;
+  --border-muted: #24352d;
+  --accent: #34d399;
+  --accent-bg: rgba(52, 211, 153, 0.14);
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--page-bg);
+}
+
+h1,
+h2 {
+  color: var(--text-h);
+  font-weight: 600;
+}
