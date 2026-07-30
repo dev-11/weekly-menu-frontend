@@ -96,7 +96,7 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
           @click.stop
         ></a>
         <button type="button" class="link-zone link-zone-edit" title="Edit" aria-label="Edit" @click.stop="startEdit"></button>
-        <span class="link-hint" aria-hidden="true">▾</span>
+        <span class="link-hint" aria-hidden="true">•</span>
       </template>
 
       <button
