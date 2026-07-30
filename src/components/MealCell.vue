@@ -176,6 +176,15 @@ function cycleSource(e: Event) {
   color: white;
 }
 
+/* The badge itself stays small so it doesn't dominate the cell, but its real
+   tap target is expanded well past that — the visible size is way under
+   Apple's 44x44pt minimum, so taps kept landing on the cell behind it. */
+.source-badge::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
 .source-badge:hover,
 .source-badge:focus-visible {
   opacity: 0.85;
@@ -201,7 +210,9 @@ function cycleSource(e: Event) {
 .cell-input {
   color: inherit;
   font: inherit;
-  font-size: 0.9rem;
+  /* Deliberately 16px, not 0.9rem like .dish — iOS Safari auto-zooms the page
+     on focus for any input under 16px, which shoves the cell off-screen. */
+  font-size: 16px;
   font-weight: 600;
   background: var(--bg-elevated);
   border: 1px solid var(--accent);
