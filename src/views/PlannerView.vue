@@ -118,15 +118,15 @@ onUnmounted(() => {
           </h2>
           <div v-for="mealType in MEAL_TYPES" :key="mealType" class="meal-row">
             <span class="meal-row-label">{{ MEAL_LABELS[mealType] }}</span>
-            <MealCell :meal="day.meals[mealType]" @commit="scheduleSave" />
+            <MealCell class="meal-row-cell" :meal="day.meals[mealType]" @commit="scheduleSave" />
           </div>
         </div>
 
         <div class="day-block">
           <h2 class="day-block-heading">Weekend Dessert</h2>
           <div class="meal-row">
-            <span class="meal-row-label">Saturday &amp; Sunday</span>
-            <MealCell :meal="store.currentWeek.weekendDessert" @commit="scheduleSave" />
+            <span class="meal-row-label">Dessert</span>
+            <MealCell class="meal-row-cell" :meal="store.currentWeek.weekendDessert" @commit="scheduleSave" />
           </div>
         </div>
       </div>
@@ -287,15 +287,29 @@ onUnmounted(() => {
 
 .meal-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  align-items: stretch;
+  gap: 0.5rem;
   margin-bottom: 0.6rem;
 }
 
 .meal-row-label {
-  font-size: 0.75rem;
+  writing-mode: vertical-rl;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  opacity: 0.6;
+  letter-spacing: 0.03em;
+  color: var(--text-h);
+  background: var(--bg-muted);
+  border-radius: 8px;
+}
+
+.meal-row-cell {
+  flex: 1;
+  min-width: 0;
 }
 
 .status {
