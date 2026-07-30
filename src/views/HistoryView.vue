@@ -177,6 +177,9 @@ h1 {
 
 .chevron {
   margin-left: auto;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text-h);
   transition: transform 0.15s ease;
 }
 
@@ -209,6 +212,9 @@ h1 {
 
 .day-name.is-empty {
   display: inline-block;
+  /* Cancel the left padding so the text lines up with filled days' text
+     instead of sitting half a rem further right. */
+  margin-left: -0.5rem;
   font-weight: 500;
   color: var(--text);
   opacity: 0.5;

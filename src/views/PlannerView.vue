@@ -217,6 +217,10 @@ onUnmounted(() => {
 .timetable {
   display: grid;
   grid-template-columns: 5.5rem repeat(7, minmax(8.5rem, 1fr));
+  /* Without this, a taller link-cell (which needs extra room for its edit
+     strip) stretches every other cell in its row to match, pushing their text
+     down and re-breaking the alignment the cells were built to share. */
+  align-items: start;
   gap: 0.5rem;
   min-width: 780px;
 }
@@ -252,6 +256,7 @@ onUnmounted(() => {
 }
 
 .cell-na {
+  min-height: 4.5rem;
   border-radius: 8px;
   background: repeating-linear-gradient(
     135deg,

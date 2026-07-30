@@ -9,6 +9,7 @@
   --border-muted: #b9d8c3;
   --accent: #059669;
   --accent-bg: rgba(5, 150, 105, 0.1);
+  --accent-bg-strong: rgba(5, 150, 105, 0.3);
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 
@@ -33,6 +34,7 @@
     --border-muted: #24352d;
     --accent: #34d399;
     --accent-bg: rgba(52, 211, 153, 0.14);
+    --accent-bg-strong: rgba(52, 211, 153, 0.32);
   }
 }
 
@@ -49,6 +51,7 @@
   --border-muted: #b9d8c3;
   --accent: #059669;
   --accent-bg: rgba(5, 150, 105, 0.1);
+  --accent-bg-strong: rgba(5, 150, 105, 0.3);
 }
 
 :root[data-theme='dark'] {
@@ -62,6 +65,7 @@
   --border-muted: #24352d;
   --accent: #34d399;
   --accent-bg: rgba(52, 211, 153, 0.14);
+  --accent-bg-strong: rgba(52, 211, 153, 0.32);
 }
 
 body {

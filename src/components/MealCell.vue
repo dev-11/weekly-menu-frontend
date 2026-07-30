@@ -68,13 +68,37 @@ function cycleSource(e: Event) {
   props.meal.source = SOURCE_CYCLE[props.meal.source]
   emit('commit')
 }
+
+function isLikelyUrl(value: string): boolean {
+  return /^https?:\/\/\S+$/i.test(value)
+}
+
+const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 </script>
 
 <template>
   <div ref="cellRoot" class="cell" :class="[`source-${meal.source}`, { filled: !!meal.dish }]" @focusout="onFocusOut">
     <div v-if="!editing" class="cell-view" tabindex="0" @click="startEdit" @keydown.enter="startEdit">
-      <span v-if="meal.dish" class="dish">{{ meal.dish }}</span>
+      <span v-if="dishIsLink" class="dish is-link" :title="meal.dish">{{ meal.dish }}</span>
+      <span v-else-if="meal.dish" class="dish">{{ meal.dish }}</span>
       <span v-else class="placeholder">+ Add</span>
+
+      <!-- Overlay layer, not part of the card's own box — the card underneath
+           looks and sizes exactly like any other cell. Top opens the recipe,
+           bottom edits; a hover tint is the only sign either zone exists. -->
+      <template v-if="dishIsLink">
+        <a
+          class="link-zone link-zone-open"
+          :href="meal.dish"
+          target="_blank"
+          rel="noopener noreferrer"
+          :title="meal.dish"
+          @click.stop
+        ></a>
+        <button type="button" class="link-zone link-zone-edit" title="Edit" aria-label="Edit" @click.stop="startEdit"></button>
+        <span class="link-hint" aria-hidden="true">▾</span>
+      </template>
+
       <button
         v-if="meal.dish"
         type="button"
@@ -127,14 +151,6 @@ function cycleSource(e: Event) {
   border-color: var(--border);
 }
 
-.cell-view:hover,
-.cell-view:focus-visible {
-  background: var(--accent-bg);
-  border-style: solid;
-  border-color: var(--accent);
-  outline: none;
-}
-
 .cell.source-ordered .cell-view,
 .cell.source-ordered .cell-input {
   border-color: #4d7c0f;
@@ -145,12 +161,104 @@ function cycleSource(e: Event) {
   border-color: #0369a1;
 }
 
+/* Prefixed with .cell so this ties the specificity of the rules above instead
+   of losing to them — plain-text and ordered/eat-out cells used to swallow
+   this on hover because ".cell.filled .cell-view" (3 classes) outranked
+   ".cell-view:hover" (2 classes), so only empty cells ever showed it. */
+.cell .cell-view:hover,
+.cell .cell-view:focus-visible {
+  background: var(--accent-bg);
+  border-style: solid;
+  border-color: var(--accent);
+  outline: none;
+}
+
 .dish {
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--text-h);
   word-break: break-word;
   padding-right: 0.25rem;
+}
+
+/* Same box, same centering as any other filled cell — the link affordance is
+   carried entirely by the overlay zones below, not by anything in the flow
+   layout, so a link-cell never needs to be taller or differently shaped. */
+.dish.is-link {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  color: var(--accent);
+  padding-right: 0.9rem;
+}
+
+/* A transparent layer stacked on top of the card, not a part of its box —
+   the card underneath keeps the exact size/border/background of every other
+   cell. Top zone opens the recipe, bottom edits; a hover tint is the only
+   thing that reveals the split, nothing is visible at rest. */
+.link-zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.link-zone-open {
+  top: 0;
+  bottom: 0.9rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.link-zone-edit {
+  bottom: 0;
+  height: 0.9rem;
+  border-radius: 0 0 8px 8px;
+}
+
+/* A tiny glyph, not a boundary line — fades in only once the card is hovered,
+   hinting there's a distinct zone below without drawing a hard edge across it. */
+.link-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.cell .cell-view:hover .link-hint,
+.cell .cell-view:focus-within .link-hint {
+  opacity: 0.6;
+}
+
+/* No background of its own — the whole card already tints via
+   ".cell .cell-view:hover" while any part of it (including this zone) is
+   hovered, and layering another copy of the same tint here made the top
+   read twice as strong as the untouched strip below it. */
+.link-zone-open:focus-visible {
+  outline: none;
+}
+
+.link-zone-edit:hover,
+.link-zone-edit:focus-visible {
+  /* Distinctly darker than the top zone's hover tint, so the two are
+     unmistakably different actions rather than the same green twice. */
+  background: var(--accent-bg-strong);
+  outline: none;
 }
 
 .placeholder {
@@ -162,10 +270,15 @@ function cycleSource(e: Event) {
   position: absolute;
   top: 0.3rem;
   right: 0.3rem;
+  /* Above the link-zone overlay, which otherwise sits on top and would eat
+     the click before it reaches the badge underneath it. */
+  z-index: 1;
   min-width: 0.6rem;
   min-height: 0.6rem;
   border: none;
-  border-radius: 4px;
+  /* A perfect circle regardless of size — 4px looked round at 0.6rem but
+     squared-off once the mobile media query grows the box to 1.4rem. */
+  border-radius: 50%;
   padding: 0;
   cursor: pointer;
   background: var(--border);
@@ -198,12 +311,14 @@ function cycleSource(e: Event) {
 .cell.source-ordered .source-badge {
   background: #4d7c0f;
   opacity: 1;
+  border-radius: 4px;
   padding: 0.1rem 0.35rem;
 }
 
 .cell.source-ateOut .source-badge {
   background: #0369a1;
   opacity: 1;
+  border-radius: 4px;
   padding: 0.1rem 0.35rem;
 }
 
