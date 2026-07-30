@@ -31,7 +31,11 @@ function filledCount(week: WeekMenu) {
 }
 
 function mealsFor(day: DayMenu) {
-  return MEAL_TYPES.map((type) => ({ type, meal: day.meals[type] }))
+  return MEAL_TYPES.map((type) => ({ type, meal: day.meals[type] })).filter(({ meal }) => meal.dish.trim())
+}
+
+function dayHasContent(day: DayMenu) {
+  return Object.values(day.meals).some((m) => m.dish.trim())
 }
 </script>
 
@@ -64,11 +68,11 @@ function mealsFor(day: DayMenu) {
 
         <ul v-if="expanded[week.weekStart]" class="day-list">
           <li v-for="day in week.days" :key="day.date" class="day-item">
-            <span class="day-name">{{ weekdayLabel(day.date) }}</span>
-            <ul class="meal-list">
+            <span class="day-name" :class="{ 'is-empty': !dayHasContent(day) }">{{ weekdayLabel(day.date) }}</span>
+            <ul v-if="dayHasContent(day)" class="meal-list">
               <li v-for="{ type, meal } in mealsFor(day)" :key="type" class="meal-item" :class="meal.source">
                 <span class="meal-type">{{ MEAL_LABELS[type] }}</span>
-                <span class="dish">{{ meal.dish || '—' }}</span>
+                <span class="dish">{{ meal.dish }}</span>
                 <span v-if="meal.source !== 'home'" class="source-badge" :class="meal.source">
                   {{ SOURCE_LABEL[meal.source] }}
                 </span>
@@ -76,11 +80,11 @@ function mealsFor(day: DayMenu) {
             </ul>
           </li>
           <li class="day-item dessert-item">
-            <span class="day-name">Weekend</span>
-            <ul class="meal-list">
+            <span class="day-name" :class="{ 'is-empty': !week.weekendDessert.dish.trim() }">Weekend Dessert</span>
+            <ul v-if="week.weekendDessert.dish.trim()" class="meal-list">
               <li class="meal-item" :class="week.weekendDessert.source">
                 <span class="meal-type">Dessert</span>
-                <span class="dish">{{ week.weekendDessert.dish || '—' }}</span>
+                <span class="dish">{{ week.weekendDessert.dish }}</span>
                 <span v-if="week.weekendDessert.source !== 'home'" class="source-badge" :class="week.weekendDessert.source">
                   {{ SOURCE_LABEL[week.weekendDessert.source] }}
                 </span>
@@ -172,6 +176,7 @@ h1 {
 }
 
 .chevron {
+  margin-left: auto;
   transition: transform 0.15s ease;
 }
 
@@ -189,7 +194,9 @@ h1 {
 }
 
 .dessert-item {
-  padding-top: 0.35rem;
+  /* Matches .day-list's gap so the dashed line sits centered between Sunday's
+     content and this heading, instead of hugging one side. */
+  padding-top: 0.5rem;
   border-top: 1px dashed var(--border);
 }
 
@@ -198,6 +205,17 @@ h1 {
   font-size: 0.85rem;
   color: var(--text-h);
   opacity: 0.7;
+}
+
+.day-name.is-empty {
+  display: inline-block;
+  font-weight: 500;
+  color: var(--text);
+  opacity: 0.5;
+  background: var(--bg-muted);
+  border: 1px dashed var(--border-muted);
+  border-radius: 6px;
+  padding: 0.1rem 0.5rem;
 }
 
 .meal-list {
@@ -260,5 +278,50 @@ h1 {
   padding: 0.5rem 1rem 0.85rem;
   font-size: 0.85rem;
   color: var(--accent);
+}
+
+/* Below this width the single-line summary (date + badges + count + chevron)
+   gets too tight and the date wraps awkwardly — give the date its own line
+   and open up the day-list spacing so it doesn't feel crammed. */
+@media (max-width: 700px) {
+  .week-summary {
+    flex-wrap: wrap;
+    row-gap: 0.6rem;
+    padding: 1rem;
+  }
+
+  .range {
+    flex: 1 1 100%;
+    font-size: 1.05rem;
+  }
+
+  .day-list {
+    gap: 1rem;
+    padding: 0.5rem 1rem 1.1rem;
+  }
+
+  .dessert-item {
+    padding-top: 1rem;
+  }
+
+  .day-name {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .meal-list {
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+  }
+
+  .meal-item {
+    padding: 0.6rem 0.7rem;
+    font-size: 1rem;
+  }
+
+  .meal-type {
+    font-size: 0.85rem;
+  }
 }
 </style>
