@@ -217,4 +217,22 @@ function cycleSource(e: Event) {
   background: var(--bg-elevated);
   border: 1px solid var(--accent);
 }
+
+/* Below this width the grid gives way to the day-list layout, whose cells are
+   wide enough to afford a genuinely bigger badge — not just a bigger invisible
+   hit area, an actually bigger target that's easier to aim for on a touchscreen. */
+@media (max-width: 700px) {
+  .source-badge {
+    top: 0.5rem;
+    right: 0.5rem;
+    min-width: 1.4rem;
+    min-height: 1.4rem;
+    font-size: 0.8rem;
+  }
+
+  .cell.source-ordered .source-badge,
+  .cell.source-ateOut .source-badge {
+    padding: 0.35rem 0.6rem;
+  }
+}
 </style>
