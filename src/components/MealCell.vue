@@ -176,6 +176,10 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   color: var(--text-h);
   word-break: break-word;
   padding-right: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Same box, same centering as any other filled cell — the link affordance is
