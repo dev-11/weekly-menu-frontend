@@ -225,8 +225,8 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   border-radius: 0 0 8px 8px;
 }
 
-/* A tiny glyph, not a boundary line — fades in only once the card is hovered,
-   hinting there's a distinct zone below without drawing a hard edge across it. */
+/* A tiny glyph, not a boundary line — always present so the split is
+   discoverable at a glance, not just once you happen to hover the card. */
 .link-hint {
   position: absolute;
   left: 50%;
@@ -235,14 +235,14 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   font-size: 0.9rem;
   line-height: 1;
   color: var(--text);
-  opacity: 0;
+  opacity: 0.45;
   pointer-events: none;
   transition: opacity 0.15s ease;
 }
 
 .cell .cell-view:hover .link-hint,
 .cell .cell-view:focus-within .link-hint {
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 /* No background of its own — the whole card already tints via
