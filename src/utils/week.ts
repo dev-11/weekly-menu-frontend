@@ -15,6 +15,10 @@ export function isWeekend(dateStr: string): boolean {
   return day === 0 || day === 6
 }
 
+export function isLikelyUrl(value: string): boolean {
+  return /^https?:\/\/\S+$/i.test(value)
+}
+
 export function toISO(d: Date): string {
   return d.toLocaleDateString('en-CA') // YYYY-MM-DD, timezone-safe
 }

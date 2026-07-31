@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
 import type { MealEntry, MealSource } from '../types/menu'
+import { isLikelyUrl } from '../utils/week'
 
 const props = defineProps<{ meal: MealEntry }>()
 const emit = defineEmits<{ (e: 'commit'): void }>()
@@ -67,10 +68,6 @@ function cycleSource(e: Event) {
   e.stopPropagation()
   props.meal.source = SOURCE_CYCLE[props.meal.source]
   emit('commit')
-}
-
-function isLikelyUrl(value: string): boolean {
-  return /^https?:\/\/\S+$/i.test(value)
 }
 
 const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))

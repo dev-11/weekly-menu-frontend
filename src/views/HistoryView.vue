@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import type { DayMenu, MealSource, WeekMenu } from '../types/menu'
 import { useMenuStore } from '../stores/menu'
-import { countMealsBySource, formatWeekRange, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
+import { countMealsBySource, formatWeekRange, isLikelyUrl, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
 
 const SOURCE_LABEL: Record<MealSource, string> = { home: '', ordered: 'Order', ateOut: 'Eat out' }
 
@@ -72,7 +72,16 @@ function dayHasContent(day: DayMenu) {
             <ul v-if="dayHasContent(day)" class="meal-list">
               <li v-for="{ type, meal } in mealsFor(day)" :key="type" class="meal-item" :class="meal.source">
                 <span class="meal-type">{{ MEAL_LABELS[type] }}</span>
-                <span class="dish">{{ meal.dish }}</span>
+                <a
+                  v-if="isLikelyUrl(meal.dish)"
+                  class="dish is-link"
+                  :href="meal.dish"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  :title="meal.dish"
+                  @click.stop
+                >{{ meal.dish }}</a>
+                <span v-else class="dish">{{ meal.dish }}</span>
                 <span v-if="meal.source !== 'home'" class="source-badge" :class="meal.source">
                   {{ SOURCE_LABEL[meal.source] }}
                 </span>
@@ -84,7 +93,16 @@ function dayHasContent(day: DayMenu) {
             <ul v-if="week.weekendDessert.dish.trim()" class="meal-list">
               <li class="meal-item" :class="week.weekendDessert.source">
                 <span class="meal-type">Dessert</span>
-                <span class="dish">{{ week.weekendDessert.dish }}</span>
+                <a
+                  v-if="isLikelyUrl(week.weekendDessert.dish)"
+                  class="dish is-link"
+                  :href="week.weekendDessert.dish"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  :title="week.weekendDessert.dish"
+                  @click.stop
+                >{{ week.weekendDessert.dish }}</a>
+                <span v-else class="dish">{{ week.weekendDessert.dish }}</span>
                 <span v-if="week.weekendDessert.source !== 'home'" class="source-badge" :class="week.weekendDessert.source">
                   {{ SOURCE_LABEL[week.weekendDessert.source] }}
                 </span>
@@ -255,6 +273,20 @@ h1 {
 .meal-item.ateOut .dish {
   font-weight: 600;
   color: var(--text-h);
+}
+
+.dish {
+  min-width: 0;
+}
+
+.dish.is-link {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  color: var(--accent);
 }
 
 .meal-type {
