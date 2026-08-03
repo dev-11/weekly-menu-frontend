@@ -253,6 +253,11 @@ onUnmounted(() => {
 }
 
 .meal-label {
+  /* Stretch independently of the grid's align-items: start (set on .timetable
+     so a taller link-cell doesn't drag every cell in its row down with it) —
+     without this the label only takes its own content height and sits at the
+     top of a taller row instead of centered in it. */
+  align-self: stretch;
   display: flex;
   align-items: center;
   font-weight: 600;
