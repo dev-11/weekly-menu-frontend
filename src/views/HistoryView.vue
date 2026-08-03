@@ -44,6 +44,7 @@ function dayHasContent(day: DayMenu) {
     <h1>Weekly history</h1>
 
     <p v-if="store.loading" class="hint">Loading…</p>
+    <p v-else-if="store.error" class="hint error">{{ store.error }}</p>
     <p v-else-if="allWeeks.length === 0" class="hint">No weeks yet.</p>
 
     <ul v-else class="week-list">
@@ -137,6 +138,11 @@ h1 {
 
 .hint {
   opacity: 0.7;
+}
+
+.hint.error {
+  color: #dc2626;
+  opacity: 1;
 }
 
 .week-list {

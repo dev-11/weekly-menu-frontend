@@ -81,6 +81,7 @@ onUnmounted(() => {
     </header>
 
     <p v-if="store.loading" class="hint">Loading…</p>
+    <p v-else-if="store.error" class="hint error">{{ store.error }}</p>
 
     <template v-else-if="store.currentWeek">
       <div v-if="!isMobile" class="timetable-scroll">
@@ -208,6 +209,11 @@ onUnmounted(() => {
 
 .hint {
   opacity: 0.7;
+}
+
+.hint.error {
+  color: #dc2626;
+  opacity: 1;
 }
 
 .timetable-scroll {
