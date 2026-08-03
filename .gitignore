@@ -42,3 +42,6 @@ __screenshots__/
 .vscode
 
 .env.development
+.env
+.env.local
+.env.*.local
