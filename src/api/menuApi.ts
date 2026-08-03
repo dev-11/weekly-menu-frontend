@@ -1,7 +1,10 @@
 import type { MealEntry, WeekMenu } from '../types/menu'
 import { datesInWeek } from '../utils/week'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string
+// Trailing slash tolerated regardless of how the env var is set, otherwise
+// ".../weekly_planner/" + "/" + weekStart produces a double "//" that API
+// Gateway doesn't route the same as a single slash.
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(/\/+$/, '')
 
 function meal(dish: string, source: MealEntry['source'] = 'home'): MealEntry {
   return { dish, source }
