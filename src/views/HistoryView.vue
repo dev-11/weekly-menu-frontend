@@ -300,8 +300,12 @@ h1 {
 }
 
 .meal-type {
-  opacity: 0.55;
-  font-size: 0.8rem;
+  /* Solid color, not dimmed — sharing "greyed-out" as the only distinguishing
+     trait against .day-name.is-empty was what made them easy to mix up
+     regardless of how far apart the opacity values were. */
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .source-badge {
