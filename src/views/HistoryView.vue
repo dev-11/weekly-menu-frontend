@@ -81,7 +81,7 @@ function dayHasContent(day: DayMenu) {
                   rel="noopener noreferrer"
                   :title="meal.dish"
                   @click.stop
-                >{{ meal.dish }}</a>
+                >{{ meal.title || meal.dish }}</a>
                 <span v-else class="dish">{{ meal.dish }}</span>
                 <span v-if="meal.source !== 'home'" class="source-badge" :class="meal.source">
                   {{ SOURCE_LABEL[meal.source] }}
@@ -102,7 +102,7 @@ function dayHasContent(day: DayMenu) {
                   rel="noopener noreferrer"
                   :title="week.weekendDessert.dish"
                   @click.stop
-                >{{ week.weekendDessert.dish }}</a>
+                >{{ week.weekendDessert.title || week.weekendDessert.dish }}</a>
                 <span v-else class="dish">{{ week.weekendDessert.dish }}</span>
                 <span v-if="week.weekendDessert.source !== 'home'" class="source-badge" :class="week.weekendDessert.source">
                   {{ SOURCE_LABEL[week.weekendDessert.source] }}
@@ -289,11 +289,10 @@ h1 {
   overflow: hidden;
 }
 
+/* No overflow/white-space overrides — inherits .dish's 2-line wrap instead of
+   truncating to one line, since this now usually shows a resolved recipe
+   title (a real sentence) rather than a bare URL. */
 .dish.is-link {
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   text-decoration: underline;
   text-underline-offset: 2px;
   color: var(--accent);

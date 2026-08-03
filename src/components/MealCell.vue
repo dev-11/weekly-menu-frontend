@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { unfurlTitle } from '../api/menuApi'
 import type { MealEntry, MealSource } from '../types/menu'
 import { isLikelyUrl } from '../utils/week'
 
@@ -19,15 +20,36 @@ async function startEdit() {
   inputRef.value?.select()
 }
 
+async function resolveTitle(url: string) {
+  const title = await unfurlTitle(url)
+  // Bail if the dish changed again while the title was in flight — don't
+  // clobber whatever's there now with a stale resolved title.
+  if (!title || props.meal.dish !== url) return
+  props.meal.title = title
+  emit('commit')
+}
+
 function commit() {
   if (!editing.value) return
   editing.value = false
   const value = draft.value.trim()
-  if (value !== props.meal.dish) {
-    props.meal.dish = value
-    emit('commit')
-  }
+  if (value === props.meal.dish) return
+
+  props.meal.dish = value
+  props.meal.title = undefined
+  emit('commit')
+
+  if (isLikelyUrl(value)) resolveTitle(value)
 }
+
+// Backfills titles for links saved before this feature existed (or ones a
+// previous unfurl attempt failed on) — otherwise only a fresh edit would ever
+// trigger one, leaving every already-saved link stuck showing its raw URL.
+onMounted(() => {
+  if (isLikelyUrl(props.meal.dish) && !props.meal.title) {
+    resolveTitle(props.meal.dish)
+  }
+})
 
 function cancel() {
   editing.value = false
@@ -76,7 +98,7 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 <template>
   <div ref="cellRoot" class="cell" :class="[`source-${meal.source}`, { filled: !!meal.dish }]" @focusout="onFocusOut">
     <div v-if="!editing" class="cell-view" tabindex="0" @click="startEdit" @keydown.enter="startEdit">
-      <span v-if="dishIsLink" class="dish is-link" :title="meal.dish">{{ meal.dish }}</span>
+      <span v-if="dishIsLink" class="dish is-link" :title="meal.dish">{{ meal.title || meal.dish }}</span>
       <span v-else-if="meal.dish" class="dish">{{ meal.dish }}</span>
       <span v-else class="placeholder">+ Add</span>
 
@@ -182,16 +204,15 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   overflow: hidden;
 }
 
-/* Same box, same centering as any other filled cell — the link affordance is
-   carried entirely by the overlay zones below, not by anything in the flow
-   layout, so a link-cell never needs to be taller or differently shaped. */
+/* Same box, same centering, same 2-line wrap as any other filled cell — the
+   link affordance is carried entirely by the overlay zones below, not by
+   anything in the flow layout, so a link-cell never needs to be taller or
+   differently shaped. Wraps rather than truncating to one line, since this
+   now usually shows a resolved recipe title (real sentence, not a bare URL)
+   and single-line ellipsis was cutting most of it off. */
 .dish.is-link {
-  display: block;
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   text-decoration: underline;
   text-underline-offset: 2px;
   color: var(--accent);

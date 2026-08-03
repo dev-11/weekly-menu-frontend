@@ -6,6 +6,10 @@ export type MealSource = 'home' | 'ordered' | 'ateOut'
 export interface MealEntry {
   dish: string
   source: MealSource
+  // Resolved page title for a recipe-link dish (og:title, fallback <title>),
+  // fetched once when the link is saved. Absent for plain-text dishes and for
+  // links whose title couldn't be resolved — falls back to showing the URL.
+  title?: string
 }
 
 export interface DayMenu {

@@ -35,6 +35,19 @@ export async function listWeeks(): Promise<WeekMenu[]> {
   return weeks.sort((a, b) => b.weekStart.localeCompare(a.weekStart))
 }
 
+// Best-effort — a failed/slow unfurl shouldn't block saving the dish, it
+// should just leave the cell showing the raw URL.
+export async function unfurlTitle(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/unfurl?url=${encodeURIComponent(url)}`)
+    if (!response.ok) return null
+    const { title } = await response.json()
+    return title ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function saveWeek(week: WeekMenu): Promise<WeekMenu> {
   const response = await fetch(`${API_BASE_URL}/${week.weekStart}`, {
     method: 'PUT',
