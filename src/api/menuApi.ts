@@ -57,3 +57,17 @@ export async function saveWeek(week: WeekMenu): Promise<WeekMenu> {
   if (!response.ok) throw new Error(`Failed to save week ${week.weekStart}: ${response.status}`)
   return response.json()
 }
+
+export interface InsightsReport {
+  mostCooked: { name: string; count: number }[]
+  repeatWarnings: { label: string; name: string; count: number; total: number; share: number }[]
+  varietyByType: { type: string; label: string; unique: number; total: number }[]
+  sourceBreakdown: { home: number; ordered: number; ateOut: number; total: number }
+  onlyOnce: { name: string }[]
+}
+
+export async function getInsights(): Promise<InsightsReport> {
+  const response = await fetch(`${API_BASE_URL}/insights`)
+  if (!response.ok) throw new Error(`Failed to load insights: ${response.status}`)
+  return response.json()
+}

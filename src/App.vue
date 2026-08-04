@@ -25,6 +25,7 @@ function toggleTheme() {
       <nav>
         <router-link to="/">Plan</router-link>
         <router-link to="/history">History</router-link>
+        <router-link to="/insights">Insights</router-link>
         <button
           type="button"
           class="theme-toggle"
@@ -91,6 +92,26 @@ nav a.router-link-active {
 @media (min-width: 1024px) {
   .top-nav {
     padding: 1rem 2rem;
+  }
+}
+
+/* A 3rd nav link (Insights) tipped this over — without tightening, "Weekly
+   Menu" wraps to two lines on a phone-width screen. */
+@media (max-width: 420px) {
+  .top-nav {
+    padding: 1rem 0.75rem;
+  }
+
+  .brand {
+    font-size: 1rem;
+  }
+
+  nav {
+    gap: 0.1rem;
+  }
+
+  nav a {
+    padding: 0.35rem 0.4rem;
   }
 }
 </style>
