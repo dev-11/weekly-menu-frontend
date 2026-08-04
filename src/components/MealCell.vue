@@ -192,10 +192,13 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   outline: none;
 }
 
+/* One weight, one color, every dish, every source — order/eat-out is already
+   signaled clearly by the colored badge and border, so the text itself
+   doesn't also need to change; mixing bold and regular within the same grid
+   read as inconsistent rather than as meaningful emphasis. */
 .dish {
-  font-weight: 600;
   font-size: 0.9rem;
-  color: var(--text-h);
+  color: var(--text);
   word-break: break-word;
   padding-right: 0.25rem;
   display: -webkit-box;
@@ -204,12 +207,6 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   overflow: hidden;
 }
 
-/* Same box, same centering, same 2-line wrap as any other filled cell — the
-   link affordance is carried entirely by the overlay zones below, not by
-   anything in the flow layout, so a link-cell never needs to be taller or
-   differently shaped. Wraps rather than truncating to one line, since this
-   now usually shows a resolved recipe title (real sentence, not a bare URL)
-   and single-line ellipsis was cutting most of it off. */
 .dish.is-link {
   flex: 1;
   min-width: 0;
@@ -372,4 +369,9 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
     padding: 0.35rem 0.6rem;
   }
 }
+
+/* Deliberately no desktop-specific sizing here — the card itself stays
+   exactly as it is on mobile. Desktop gets more room from wider grid columns
+   and gaps (see PlannerView.vue), not from the cells themselves getting
+   bigger/bolder; that read as heavier, not airier. */
 </style>

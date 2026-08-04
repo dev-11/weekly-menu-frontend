@@ -375,4 +375,12 @@ h1 {
     font-size: 0.85rem;
   }
 }
+
+/* Just a wider column for better line-length on a wide viewport — text size
+   and padding stay exactly as they are elsewhere, not scaled up. */
+@media (min-width: 1024px) {
+  .history {
+    max-width: 900px;
+  }
+}
 </style>

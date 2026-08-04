@@ -223,9 +223,10 @@ onUnmounted(() => {
 .timetable {
   display: grid;
   grid-template-columns: 5.5rem repeat(7, minmax(8.5rem, 1fr));
-  /* Without this, a taller link-cell (which needs extra room for its edit
-     strip) stretches every other cell in its row to match, pushing their text
-     down and re-breaking the alignment the cells were built to share. */
+  /* Every cell is a fixed, uniform size (see MealCell.vue's line-clamp), so
+     this doesn't actually need to prevent stretching to keep cells aligned
+     any more — but it's cheap insurance against a future cell type that
+     isn't fixed-height dragging its whole row out of alignment again. */
   align-items: start;
   gap: 0.5rem;
   min-width: 780px;
@@ -253,10 +254,9 @@ onUnmounted(() => {
 }
 
 .meal-label {
-  /* Stretch independently of the grid's align-items: start (set on .timetable
-     so a taller link-cell doesn't drag every cell in its row down with it) —
-     without this the label only takes its own content height and sits at the
-     top of a taller row instead of centered in it. */
+  /* Stretch independently of the grid's align-items: start (set on .timetable)
+     — without this the label only takes its own content height and sits at
+     the top of the row instead of centered in it. */
   align-self: stretch;
   display: flex;
   align-items: center;
@@ -334,5 +334,22 @@ onUnmounted(() => {
   font-size: 0.8rem;
   opacity: 0.6;
   text-align: right;
+}
+
+/* Cards stay exactly as sized on mobile (see MealCell.vue) — this is only
+   about letting the grid actually use the width a desktop viewport has,
+   instead of forcing horizontal scroll while leaving empty margins outside
+   the (too-narrow) max-width. Column floors below are sized to fit within
+   this breakpoint's own minimum (1024px), so the grid never needs to scroll
+   to be seen — it grows via 1fr as the viewport gets wider than that. */
+@media (min-width: 1024px) {
+  .planner {
+    max-width: 1800px;
+  }
+
+  .timetable {
+    grid-template-columns: 6rem repeat(7, minmax(6.5rem, 1fr));
+    gap: 0.75rem;
+  }
 }
 </style>

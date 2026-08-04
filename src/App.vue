@@ -87,4 +87,10 @@ nav a.router-link-active {
   align-items: center;
   justify-content: center;
 }
+
+@media (min-width: 1024px) {
+  .top-nav {
+    padding: 1rem 2rem;
+  }
+}
 </style>
