@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { getInsights } from '../api/menuApi'
 import type { InsightsReport } from '../api/menuApi'
 
+
 const report = ref<InsightsReport | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -21,6 +22,14 @@ onMounted(async () => {
 
 function pct(count: number, total: number): number {
   return total === 0 ? 0 : Math.round((count / total) * 100)
+}
+
+// Fixed px width, not %, so segments render correctly regardless of the
+// surrounding flex column's own width — see the source-detail-bar CSS below.
+const SOURCE_BAR_WIDTH = 72
+
+function segWidth(share: number): number {
+  return Math.max(3, Math.round(share * SOURCE_BAR_WIDTH))
 }
 </script>
 
@@ -80,14 +89,53 @@ function pct(count: number, total: number): number {
           <div class="source-stat">
             <span class="source-stat-value">{{ pct(report.sourceBreakdown.home, report.sourceBreakdown.total) }}%</span>
             <span class="source-stat-label">Home cooked</span>
+            <div v-if="report.sourceByType.home.length" class="source-detail home">
+              <div class="source-detail-bar">
+                <span
+                  v-for="b in report.sourceByType.home"
+                  :key="b.type"
+                  class="source-detail-segment"
+                  :style="{ width: segWidth(b.share) + 'px' }"
+                ></span>
+              </div>
+              <ul class="source-detail-legend">
+                <li v-for="b in report.sourceByType.home" :key="b.type">{{ b.label }} {{ Math.round(b.share * 100) }}%</li>
+              </ul>
+            </div>
           </div>
           <div class="source-stat">
             <span class="source-stat-value">{{ pct(report.sourceBreakdown.ordered, report.sourceBreakdown.total) }}%</span>
             <span class="source-stat-label">Ordered</span>
+            <div v-if="report.sourceByType.ordered.length" class="source-detail ordered">
+              <div class="source-detail-bar">
+                <span
+                  v-for="b in report.sourceByType.ordered"
+                  :key="b.type"
+                  class="source-detail-segment"
+                  :style="{ width: segWidth(b.share) + 'px' }"
+                ></span>
+              </div>
+              <ul class="source-detail-legend">
+                <li v-for="b in report.sourceByType.ordered" :key="b.type">{{ b.label }} {{ Math.round(b.share * 100) }}%</li>
+              </ul>
+            </div>
           </div>
           <div class="source-stat">
             <span class="source-stat-value">{{ pct(report.sourceBreakdown.ateOut, report.sourceBreakdown.total) }}%</span>
             <span class="source-stat-label">Eat out</span>
+            <div v-if="report.sourceByType.ateOut.length" class="source-detail ateOut">
+              <div class="source-detail-bar">
+                <span
+                  v-for="b in report.sourceByType.ateOut"
+                  :key="b.type"
+                  class="source-detail-segment"
+                  :style="{ width: segWidth(b.share) + 'px' }"
+                ></span>
+              </div>
+              <ul class="source-detail-legend">
+                <li v-for="b in report.sourceByType.ateOut" :key="b.type">{{ b.label }} {{ Math.round(b.share * 100) }}%</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -276,9 +324,68 @@ h1 {
   color: var(--text-h);
 }
 
+.source-detail {
+  margin: 0.65rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.source-detail-bar {
+  display: flex;
+  gap: 2px;
+  width: 72px;
+  height: 0.6rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.source-detail-segment {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.source-detail-segment:nth-child(2) {
+  opacity: 0.65;
+}
+
+.source-detail-segment:nth-child(3) {
+  opacity: 0.4;
+}
+
+.source-detail-segment:nth-child(4) {
+  opacity: 0.25;
+}
+
+.source-detail.ordered .source-detail-segment {
+  background: #4d7c0f;
+}
+
+.source-detail.ateOut .source-detail-segment {
+  background: #0369a1;
+}
+
+.source-detail-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.6rem;
+  opacity: 0.75;
+}
+
 .source-stat-label {
   display: block;
   font-size: 0.75rem;
+  line-height: 1.3;
+  min-height: 2.6em;
   opacity: 0.7;
   margin-top: 0.2rem;
 }
