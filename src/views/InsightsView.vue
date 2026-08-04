@@ -36,7 +36,12 @@ function pct(count: number, total: number): number {
       <section class="panel">
         <h2>Most cooked</h2>
         <ul class="rank-list">
-          <li v-for="(d, i) in report.mostCooked" :key="d.name" class="rank-item">
+          <li
+            v-for="(d, i) in report.mostCooked"
+            :key="d.name"
+            class="rank-item"
+            :class="{ ordered: d.sources.ordered, ateOut: d.sources.ateOut }"
+          >
             <span class="rank-index">{{ i + 1 }}</span>
             <span class="rank-name">{{ d.name }}</span>
             <span v-if="d.sources.ordered" class="rank-badge ordered">Order</span>
@@ -156,6 +161,16 @@ h1 {
   align-items: center;
   gap: 0.6rem;
   font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.rank-item.ordered {
+  background: rgba(77, 124, 15, 0.12);
+}
+
+.rank-item.ateOut {
+  background: rgba(3, 105, 161, 0.12);
 }
 
 .rank-index {
