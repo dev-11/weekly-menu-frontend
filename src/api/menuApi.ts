@@ -59,7 +59,7 @@ export async function saveWeek(week: WeekMenu): Promise<WeekMenu> {
 }
 
 export interface InsightsReport {
-  mostCooked: { name: string; count: number }[]
+  mostCooked: { name: string; count: number; sources: { home: number; ordered: number; ateOut: number } }[]
   repeatWarnings: { label: string; name: string; count: number; total: number; share: number }[]
   varietyByType: { type: string; label: string; unique: number; total: number }[]
   sourceBreakdown: { home: number; ordered: number; ateOut: number; total: number }

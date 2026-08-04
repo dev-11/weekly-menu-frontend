@@ -39,6 +39,8 @@ function pct(count: number, total: number): number {
           <li v-for="(d, i) in report.mostCooked" :key="d.name" class="rank-item">
             <span class="rank-index">{{ i + 1 }}</span>
             <span class="rank-name">{{ d.name }}</span>
+            <span v-if="d.sources.ordered" class="rank-badge ordered">{{ d.sources.ordered }} order</span>
+            <span v-if="d.sources.ateOut" class="rank-badge ateOut">{{ d.sources.ateOut }} eat out</span>
             <span class="rank-count">{{ d.count }}×</span>
           </li>
         </ul>
@@ -172,6 +174,23 @@ h1 {
   font-weight: 600;
   color: var(--accent);
   font-size: 0.85rem;
+}
+
+.rank-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  color: white;
+}
+
+.rank-badge.ordered {
+  background: #4d7c0f;
+}
+
+.rank-badge.ateOut {
+  background: #0369a1;
 }
 
 .warning-item {
