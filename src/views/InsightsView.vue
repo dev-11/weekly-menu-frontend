@@ -24,12 +24,39 @@ function pct(count: number, total: number): number {
   return total === 0 ? 0 : Math.round((count / total) * 100)
 }
 
-// Fixed px width, not %, so segments render correctly regardless of the
-// surrounding flex column's own width — see the source-detail-bar CSS below.
-const SOURCE_BAR_WIDTH = 72
+type SourceKey = 'home' | 'ordered' | 'ateOut'
 
-function segWidth(share: number): number {
-  return Math.max(3, Math.round(share * SOURCE_BAR_WIDTH))
+// Hardcoded (not var(--accent)) to match the existing hardcoded order/ateOut
+// badge colors used throughout Plan/History/Most cooked, rather than mixing
+// a theme-reactive color with two static ones.
+const SOURCE_RGB: Record<SourceKey, string> = {
+  home: '5, 150, 105',
+  ordered: '77, 124, 15',
+  ateOut: '3, 105, 161',
+}
+
+// Each meal type within a source gets the same hue at a lower opacity, so
+// the dominant slice reads clearly and the rest still visibly belong to the
+// same source-colored ring.
+const SEGMENT_OPACITIES = [1, 0.6, 0.35, 0.2]
+
+function donutBackground(items: { share: number }[], source: SourceKey): string {
+  if (!items.length) return 'var(--bg-elevated)'
+  let cursor = 0
+  const stops = items.map((b, i) => {
+    const start = cursor
+    const end = cursor + b.share * 100
+    cursor = end
+    return `${segmentColor(source, i)} ${start}% ${end}%`
+  })
+  return `conic-gradient(${stops.join(', ')})`
+}
+
+// Shared by the ring's conic-gradient stops and the legend dots, so each
+// legend row's swatch is the exact shade of its wedge in the ring.
+function segmentColor(source: SourceKey, index: number): string {
+  const opacity = SEGMENT_OPACITIES[index] ?? SEGMENT_OPACITIES[SEGMENT_OPACITIES.length - 1]
+  return `rgba(${SOURCE_RGB[source]}, ${opacity})`
 }
 </script>
 
@@ -89,51 +116,39 @@ function segWidth(share: number): number {
           <div class="source-stat">
             <span class="source-stat-value">{{ pct(report.sourceBreakdown.home, report.sourceBreakdown.total) }}%</span>
             <span class="source-stat-label">Home cooked</span>
-            <div v-if="report.sourceByType.home.length" class="source-detail home">
-              <div class="source-detail-bar">
-                <span
-                  v-for="b in report.sourceByType.home"
-                  :key="b.type"
-                  class="source-detail-segment"
-                  :style="{ width: segWidth(b.share) + 'px' }"
-                ></span>
-              </div>
+            <div v-if="report.sourceByType.home.length" class="source-detail">
+              <div class="source-detail-donut" :style="{ background: donutBackground(report.sourceByType.home, 'home') }"></div>
               <ul class="source-detail-legend">
-                <li v-for="b in report.sourceByType.home" :key="b.type">{{ b.label }} {{ Math.round(b.share * 100) }}%</li>
+                <li v-for="(b, i) in report.sourceByType.home" :key="b.type">
+                  <span class="source-detail-dot" :style="{ background: segmentColor('home', i) }"></span>
+                  {{ b.label }} {{ Math.round(b.share * 100) }}%
+                </li>
               </ul>
             </div>
           </div>
           <div class="source-stat">
             <span class="source-stat-value">{{ pct(report.sourceBreakdown.ordered, report.sourceBreakdown.total) }}%</span>
             <span class="source-stat-label">Ordered</span>
-            <div v-if="report.sourceByType.ordered.length" class="source-detail ordered">
-              <div class="source-detail-bar">
-                <span
-                  v-for="b in report.sourceByType.ordered"
-                  :key="b.type"
-                  class="source-detail-segment"
-                  :style="{ width: segWidth(b.share) + 'px' }"
-                ></span>
-              </div>
+            <div v-if="report.sourceByType.ordered.length" class="source-detail">
+              <div class="source-detail-donut" :style="{ background: donutBackground(report.sourceByType.ordered, 'ordered') }"></div>
               <ul class="source-detail-legend">
-                <li v-for="b in report.sourceByType.ordered" :key="b.type">{{ b.label }} {{ Math.round(b.share * 100) }}%</li>
+                <li v-for="(b, i) in report.sourceByType.ordered" :key="b.type">
+                  <span class="source-detail-dot" :style="{ background: segmentColor('ordered', i) }"></span>
+                  {{ b.label }} {{ Math.round(b.share * 100) }}%
+                </li>
               </ul>
             </div>
           </div>
           <div class="source-stat">
             <span class="source-stat-value">{{ pct(report.sourceBreakdown.ateOut, report.sourceBreakdown.total) }}%</span>
             <span class="source-stat-label">Eat out</span>
-            <div v-if="report.sourceByType.ateOut.length" class="source-detail ateOut">
-              <div class="source-detail-bar">
-                <span
-                  v-for="b in report.sourceByType.ateOut"
-                  :key="b.type"
-                  class="source-detail-segment"
-                  :style="{ width: segWidth(b.share) + 'px' }"
-                ></span>
-              </div>
+            <div v-if="report.sourceByType.ateOut.length" class="source-detail">
+              <div class="source-detail-donut" :style="{ background: donutBackground(report.sourceByType.ateOut, 'ateOut') }"></div>
               <ul class="source-detail-legend">
-                <li v-for="b in report.sourceByType.ateOut" :key="b.type">{{ b.label }} {{ Math.round(b.share * 100) }}%</li>
+                <li v-for="(b, i) in report.sourceByType.ateOut" :key="b.type">
+                  <span class="source-detail-dot" :style="{ background: segmentColor('ateOut', i) }"></span>
+                  {{ b.label }} {{ Math.round(b.share * 100) }}%
+                </li>
               </ul>
             </div>
           </div>
@@ -325,7 +340,7 @@ h1 {
 }
 
 .source-detail {
-  margin: 0.65rem 0 0;
+  margin: 0.6rem 0 0;
   padding-top: 0.6rem;
   border-top: 1px dashed var(--border-muted);
   display: flex;
@@ -334,40 +349,20 @@ h1 {
   gap: 0.45rem;
 }
 
-.source-detail-bar {
-  display: flex;
-  gap: 2px;
-  width: 72px;
-  height: 0.6rem;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--bg-elevated);
+.source-detail-donut {
+  position: relative;
+  flex-shrink: 0;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
 }
 
-.source-detail-segment {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-}
-
-.source-detail-segment:nth-child(2) {
-  opacity: 0.65;
-}
-
-.source-detail-segment:nth-child(3) {
-  opacity: 0.4;
-}
-
-.source-detail-segment:nth-child(4) {
-  opacity: 0.25;
-}
-
-.source-detail.ordered .source-detail-segment {
-  background: #4d7c0f;
-}
-
-.source-detail.ateOut .source-detail-segment {
-  background: #0369a1;
+.source-detail-donut::after {
+  content: '';
+  position: absolute;
+  inset: 0.55rem;
+  border-radius: 50%;
+  background: var(--bg-muted);
 }
 
 .source-detail-legend {
@@ -376,16 +371,32 @@ h1 {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  align-items: flex-start;
+  gap: 3px;
   font-size: 0.6rem;
-  opacity: 0.75;
+  line-height: 1.15;
+  opacity: 0.85;
+}
+
+.source-detail-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.source-detail-dot {
+  flex-shrink: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
 }
 
 .source-stat-label {
   display: block;
   font-size: 0.75rem;
-  line-height: 1.3;
-  min-height: 2.6em;
+  white-space: nowrap;
   opacity: 0.7;
   margin-top: 0.2rem;
 }
