@@ -42,14 +42,30 @@ const SOURCE_RGB: Record<SourceKey, string> = {
 // and reads as one coherent ring instead of a mix of unrelated colors.
 const SEGMENT_OPACITIES = [1, 0.6, 0.35, 0.2]
 
+// A thin gap between wedges — matching the ring's own hole color — gives
+// every wedge a visible boundary even where two shades of the same hue sit
+// next to each other.
+const DONUT_GAP_PCT = 2
+
 function conicRing(colors: string[], shares: number[]): string {
   if (!shares.length) return 'var(--bg-elevated)'
+  // One gap per wedge, not per wedge-minus-one — the ring is a closed loop,
+  // so the last wedge also needs a gap before it wraps around to meet the
+  // first one at the top, or that seam renders with no visible boundary.
+  const totalGap = shares.length > 1 ? DONUT_GAP_PCT * shares.length : 0
   let cursor = 0
-  const parts = shares.map((share, i) => {
+  const parts: string[] = []
+  shares.forEach((share, i) => {
+    const size = Math.max(0, share * (100 - totalGap))
     const start = cursor
-    const end = cursor + share * 100
+    const end = start + size
+    parts.push(`${colors[i]} ${start}% ${end}%`)
     cursor = end
-    return `${colors[i]} ${start}% ${end}%`
+    if (shares.length > 1) {
+      const gapEnd = cursor + DONUT_GAP_PCT
+      parts.push(`var(--bg-muted) ${cursor}% ${gapEnd}%`)
+      cursor = gapEnd
+    }
   })
   return `conic-gradient(${parts.join(', ')})`
 }
