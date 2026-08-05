@@ -1,4 +1,4 @@
-import type { MealSource, MealType, WeekMenu } from '../types/menu'
+import type { DayMenu, MealSource, MealType, WeekMenu } from '../types/menu'
 
 const WEEKDAY_LABELS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -68,4 +68,20 @@ export function formatWeekRange(weekStart: string): string {
   const startFmt = start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
   const endFmt = end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   return `${startFmt} – ${endFmt}`
+}
+
+// A light-hearted, non-judgmental aside for days that lean entirely one way
+// — never shown for a day that hasn't happened yet, since "no plan" only
+// means something once the day's actually passed. Shared by Plan (the
+// current week, live) and History (every past week). Just the glyph, no
+// label or badge styling — a specific food emoji (pizza, egg, etc.) would
+// wrongly imply that exact dish, so these stay generic ("who"/"how", not
+// "what"): a cook for home-cooked, a takeout box for anything that wasn't.
+export function dayMood(day: DayMenu): string | null {
+  if (day.date > toISO(new Date())) return null
+  const filled = Object.values(day.meals).filter((m) => m.dish.trim())
+  if (filled.length === 0) return '🎲'
+  if (filled.every((m) => m.source === 'home')) return '🧑‍🍳'
+  if (filled.every((m) => m.source !== 'home')) return '🥡'
+  return null
 }

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import type { DayMenu, MealSource, WeekMenu } from '../types/menu'
 import { useMenuStore } from '../stores/menu'
-import { countMealsBySource, formatWeekRange, isLikelyUrl, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
+import { countMealsBySource, dayMood, formatWeekRange, isLikelyUrl, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
 
 const SOURCE_LABEL: Record<MealSource, string> = { home: '', ordered: 'Order', ateOut: 'Eat out' }
 
@@ -69,7 +69,10 @@ function dayHasContent(day: DayMenu) {
 
         <ul v-if="expanded[week.weekStart]" class="day-list">
           <li v-for="day in week.days" :key="day.date" class="day-item">
-            <span class="day-name" :class="{ 'is-empty': !dayHasContent(day) }">{{ weekdayLabel(day.date) }}</span>
+            <div class="day-header">
+              <span class="day-name" :class="{ 'is-empty': !dayHasContent(day) }">{{ weekdayLabel(day.date) }}</span>
+              <span v-if="dayMood(day)" class="day-mood">{{ dayMood(day) }}</span>
+            </div>
             <ul v-if="dayHasContent(day)" class="meal-list">
               <li v-for="{ type, meal } in mealsFor(day)" :key="type" class="meal-item" :class="meal.source">
                 <span class="meal-type">{{ MEAL_LABELS[type] }}</span>
@@ -90,7 +93,9 @@ function dayHasContent(day: DayMenu) {
             </ul>
           </li>
           <li class="day-item dessert-item">
-            <span class="day-name" :class="{ 'is-empty': !week.weekendDessert.dish.trim() }">Weekend Dessert</span>
+            <div class="day-header">
+              <span class="day-name" :class="{ 'is-empty': !week.weekendDessert.dish.trim() }">Weekend Dessert</span>
+            </div>
             <ul v-if="week.weekendDessert.dish.trim()" class="meal-list">
               <li class="meal-item" :class="week.weekendDessert.source">
                 <span class="meal-type">Dessert</span>
@@ -227,6 +232,13 @@ h1 {
   border-top: 1px dashed var(--border);
 }
 
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
 .day-name {
   font-weight: 600;
   font-size: 0.85rem;
@@ -246,6 +258,11 @@ h1 {
   border: 1px dashed var(--border-muted);
   border-radius: 6px;
   padding: 0.1rem 0.5rem;
+}
+
+.day-mood {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .meal-list {
@@ -355,10 +372,12 @@ h1 {
     padding-top: 1rem;
   }
 
-  .day-name {
-    display: block;
-    font-size: 0.95rem;
+  .day-header {
     margin-bottom: 0.3rem;
+  }
+
+  .day-name {
+    font-size: 0.95rem;
   }
 
   .meal-list {

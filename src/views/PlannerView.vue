@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MealCell from '../components/MealCell.vue'
 import { useMenuStore } from '../stores/menu'
-import { addWeeks, countMealsBySource, formatWeekRange, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
+import { addWeeks, countMealsBySource, dayMood, formatWeekRange, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
 
 const store = useMenuStore()
 const route = useRoute()
@@ -88,7 +88,7 @@ onUnmounted(() => {
         <div class="timetable">
           <div class="corner"></div>
           <div v-for="day in store.currentWeek.days" :key="day.date" class="day-header">
-            <strong>{{ weekdayLabel(day.date) }}</strong>
+            <strong>{{ weekdayLabel(day.date) }}<span v-if="dayMood(day)" class="day-mood">{{ dayMood(day) }}</span></strong>
             <span>{{ day.date.slice(5) }}</span>
           </div>
 
@@ -114,9 +114,11 @@ onUnmounted(() => {
 
       <div v-else class="day-list">
         <div v-for="day in store.currentWeek.days" :key="day.date" class="day-block">
-          <h2 class="day-block-heading">
-            {{ weekdayLabel(day.date) }} <span>{{ day.date.slice(5) }}</span>
-          </h2>
+          <div class="day-block-heading-row">
+            <h2 class="day-block-heading">
+              {{ weekdayLabel(day.date) }}<span>{{ day.date.slice(5) }}</span><span v-if="dayMood(day)" class="day-mood">{{ dayMood(day) }}</span>
+            </h2>
+          </div>
           <div v-for="mealType in MEAL_TYPES" :key="mealType" class="meal-row">
             <span class="meal-row-label">{{ MEAL_LABELS[mealType] }}</span>
             <MealCell class="meal-row-cell" :meal="day.meals[mealType]" @commit="scheduleSave" />
@@ -124,7 +126,9 @@ onUnmounted(() => {
         </div>
 
         <div class="day-block">
-          <h2 class="day-block-heading">Weekend Dessert</h2>
+          <div class="day-block-heading-row">
+            <h2 class="day-block-heading">Weekend Dessert</h2>
+          </div>
           <div class="meal-row">
             <span class="meal-row-label">Dessert</span>
             <MealCell class="meal-row-cell" :meal="store.currentWeek.weekendDessert" @commit="scheduleSave" />
@@ -253,6 +257,13 @@ onUnmounted(() => {
   opacity: 0.6;
 }
 
+.day-header .day-mood {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  opacity: 1;
+  line-height: 1;
+}
+
 .meal-label {
   /* Stretch independently of the grid's align-items: start (set on .timetable)
      — without this the label only takes its own content height and sits at
@@ -289,13 +300,28 @@ onUnmounted(() => {
   gap: 1.25rem;
 }
 
+.day-block-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.6rem;
+}
+
+.day-block-heading-row .day-mood {
+  font-size: 1.15rem;
+  line-height: 1;
+  opacity: 1;
+}
+
 .day-block-heading {
   font-size: 1rem;
-  margin: 0 0 0.6rem;
+  margin: 0;
   color: var(--text-h);
 }
 
 .day-block-heading span {
+  margin-left: 0.5rem;
   font-size: 0.8rem;
   font-weight: 400;
   opacity: 0.6;
