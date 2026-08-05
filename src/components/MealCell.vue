@@ -172,7 +172,7 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 
 .cell.source-ordered .cell-view,
 .cell.source-ordered .cell-input {
-  border-color: #4d7c0f;
+  border-color: #16a34a;
 }
 
 .cell.source-ateOut .cell-view,
@@ -328,7 +328,7 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 }
 
 .cell.source-ordered .source-badge {
-  background: #4d7c0f;
+  background: #16a34a;
   opacity: 1;
   border-radius: 4px;
   padding: 0.1rem 0.35rem;

@@ -26,15 +26,13 @@ function pct(count: number, total: number): number {
 
 type SourceKey = 'home' | 'ordered' | 'ateOut'
 
-// "Ordered" uses amber here rather than the olive-green badge color used
-// elsewhere (Plan/History/Most cooked) — in a donut, home-green and
-// olive-green sitting next to eat-out-blue reads as a muddy green/blue
-// clash. Amber is far enough from both hues to stay legible as a distinct
-// wedge no matter which two end up adjacent. Home and eat-out keep the
-// app-wide colors since they're never the ones causing the clash.
+// The app-wide "Order" color, matching MealCell, HistoryView and
+// PlannerView's source-badge colors — a cleaner, more saturated green than
+// the old olive, and distinct enough from the app's teal accent (used for
+// "Home cooked") that the two never get mistaken for one ring's shades.
 const SOURCE_RGB: Record<SourceKey, string> = {
   home: '5, 150, 105',
-  ordered: '217, 119, 6',
+  ordered: '22, 163, 74',
   ateOut: '3, 105, 161',
 }
 
@@ -276,7 +274,7 @@ h1 {
 }
 
 .rank-item.ordered {
-  background: rgba(77, 124, 15, 0.12);
+  background: rgba(22, 163, 74, 0.12);
 }
 
 .rank-item.ateOut {
@@ -297,7 +295,7 @@ h1 {
 
 .rank-count {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--text-h);
   font-size: 0.85rem;
 }
 
@@ -311,7 +309,7 @@ h1 {
 }
 
 .rank-badge.ordered {
-  background: #4d7c0f;
+  background: #16a34a;
 }
 
 .rank-badge.ateOut {
@@ -322,7 +320,7 @@ h1 {
   font-size: 0.9rem;
   color: var(--text);
   padding: 0.5rem 0.6rem;
-  background: var(--accent-bg);
+  background: var(--bg-muted);
   border-radius: 6px;
 }
 

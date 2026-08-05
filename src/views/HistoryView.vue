@@ -268,7 +268,7 @@ h1 {
 }
 
 .meal-item.ordered {
-  background: rgba(77, 124, 15, 0.12);
+  background: rgba(22, 163, 74, 0.12);
 }
 
 .meal-item.ateOut {
@@ -317,7 +317,7 @@ h1 {
 }
 
 .source-badge.ordered {
-  background: #4d7c0f;
+  background: #16a34a;
 }
 
 .source-badge.ateOut {

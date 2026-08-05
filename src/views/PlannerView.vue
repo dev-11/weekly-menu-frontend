@@ -191,7 +191,7 @@ onUnmounted(() => {
 }
 
 .source-badge.ordered {
-  background: #4d7c0f;
+  background: #16a34a;
 }
 
 .source-badge.ateOut {
