@@ -58,6 +58,26 @@ function segmentColor(source: SourceKey, index: number): string {
   const opacity = SEGMENT_OPACITIES[index] ?? SEGMENT_OPACITIES[SEGMENT_OPACITIES.length - 1]
   return `rgba(${SOURCE_RGB[source]}, ${opacity})`
 }
+
+// The inverse breakdown (per meal type, by source) mixes three genuinely
+// different categories in one ring rather than one source at varying
+// counts, so each wedge gets its source's full-strength color instead of a
+// shared hue at different opacities.
+function sourceRgb(key: string): string {
+  return SOURCE_RGB[key as SourceKey]
+}
+
+function sourceDonutBackground(sources: { key: string; share: number }[]): string {
+  if (!sources.length) return 'var(--bg-elevated)'
+  let cursor = 0
+  const stops = sources.map((s) => {
+    const start = cursor
+    const end = cursor + s.share * 100
+    cursor = end
+    return `rgb(${sourceRgb(s.key)}) ${start}% ${end}%`
+  })
+  return `conic-gradient(${stops.join(', ')})`
+}
 </script>
 
 <template>
@@ -148,6 +168,25 @@ function segmentColor(source: SourceKey, index: number): string {
                 <li v-for="(b, i) in report.sourceByType.ateOut" :key="b.type">
                   <span class="source-detail-dot" :style="{ background: segmentColor('ateOut', i) }"></span>
                   {{ b.label }} {{ Math.round(b.share * 100) }}%
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>How each meal is made</h2>
+        <div class="type-summary">
+          <div v-for="t in report.typeSourceBreakdown" :key="t.type" class="type-stat">
+            <span class="type-stat-value">{{ t.total }}</span>
+            <span class="type-stat-label">{{ t.label }}</span>
+            <div class="type-detail">
+              <div class="type-detail-donut" :style="{ background: sourceDonutBackground(t.sources) }"></div>
+              <ul class="type-detail-legend">
+                <li v-for="s in t.sources" :key="s.key">
+                  <span class="type-detail-dot" :style="{ background: `rgb(${sourceRgb(s.key)})` }"></span>
+                  {{ s.label }} {{ Math.round(s.share * 100) }}%
                 </li>
               </ul>
             </div>
@@ -399,6 +438,88 @@ h1 {
   white-space: nowrap;
   opacity: 0.7;
   margin-top: 0.2rem;
+}
+
+.type-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.type-stat {
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  background: var(--bg-muted);
+  border-radius: 8px;
+}
+
+.type-stat-value {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.type-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0.7;
+  margin-top: 0.2rem;
+}
+
+.type-detail {
+  margin: 0.6rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.type-detail-donut {
+  flex-shrink: 0;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  position: relative;
+}
+
+.type-detail-donut::after {
+  content: '';
+  position: absolute;
+  inset: 0.55rem;
+  border-radius: 50%;
+  background: var(--bg-muted);
+}
+
+.type-detail-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  font-size: 0.6rem;
+  line-height: 1.15;
+  opacity: 0.85;
+}
+
+.type-detail-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.type-detail-dot {
+  flex-shrink: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
 }
 
 .chip-list {

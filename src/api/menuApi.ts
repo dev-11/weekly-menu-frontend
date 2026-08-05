@@ -65,6 +65,13 @@ export interface InsightsSourceTypeBreakdown {
   share: number
 }
 
+export interface InsightsTypeSourceBreakdown {
+  type: string
+  label: string
+  total: number
+  sources: { key: string; label: string; count: number; share: number }[]
+}
+
 export interface InsightsReport {
   mostCooked: { name: string; count: number; sources: { home: number; ordered: number; ateOut: number } }[]
   repeatWarnings: { label: string; name: string; count: number; total: number; share: number }[]
@@ -75,6 +82,7 @@ export interface InsightsReport {
     ordered: InsightsSourceTypeBreakdown[]
     ateOut: InsightsSourceTypeBreakdown[]
   }
+  typeSourceBreakdown: InsightsTypeSourceBreakdown[]
   onlyOnce: { name: string }[]
 }
 
