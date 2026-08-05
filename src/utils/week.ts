@@ -80,7 +80,7 @@ export function formatWeekRange(weekStart: string): string {
 export function dayMood(day: DayMenu): string | null {
   if (day.date > toISO(new Date())) return null
   const filled = Object.values(day.meals).filter((m) => m.dish.trim())
-  if (filled.length === 0) return '🎲'
+  if (filled.length === 0) return '🕵️'
   if (filled.every((m) => m.source === 'home')) return '🧑‍🍳'
   if (filled.every((m) => m.source !== 'home')) return '🥡'
   return null
