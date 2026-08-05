@@ -26,30 +26,41 @@ function pct(count: number, total: number): number {
 
 type SourceKey = 'home' | 'ordered' | 'ateOut'
 
-// Hardcoded (not var(--accent)) to match the existing hardcoded order/ateOut
-// badge colors used throughout Plan/History/Most cooked, rather than mixing
-// a theme-reactive color with two static ones.
+// "Ordered" uses amber here rather than the olive-green badge color used
+// elsewhere (Plan/History/Most cooked) — in a donut, home-green and
+// olive-green sitting next to eat-out-blue reads as a muddy green/blue
+// clash. Amber is far enough from both hues to stay legible as a distinct
+// wedge no matter which two end up adjacent. Home and eat-out keep the
+// app-wide colors since they're never the ones causing the clash.
 const SOURCE_RGB: Record<SourceKey, string> = {
   home: '5, 150, 105',
-  ordered: '77, 124, 15',
+  ordered: '217, 119, 6',
   ateOut: '3, 105, 161',
 }
 
-// Each meal type within a source gets the same hue at a lower opacity, so
-// the dominant slice reads clearly and the rest still visibly belong to the
-// same source-colored ring.
+// Each ring's wedges share one hue at decreasing opacity (dominant slice
+// first) rather than a distinct color per slice — avoids any hue-clash
+// (e.g. green next to blue) regardless of which categories end up adjacent,
+// and reads as one coherent ring instead of a mix of unrelated colors.
 const SEGMENT_OPACITIES = [1, 0.6, 0.35, 0.2]
 
-function donutBackground(items: { share: number }[], source: SourceKey): string {
-  if (!items.length) return 'var(--bg-elevated)'
+function conicRing(colors: string[], shares: number[]): string {
+  if (!shares.length) return 'var(--bg-elevated)'
   let cursor = 0
-  const stops = items.map((b, i) => {
+  const parts = shares.map((share, i) => {
     const start = cursor
-    const end = cursor + b.share * 100
+    const end = cursor + share * 100
     cursor = end
-    return `${segmentColor(source, i)} ${start}% ${end}%`
+    return `${colors[i]} ${start}% ${end}%`
   })
-  return `conic-gradient(${stops.join(', ')})`
+  return `conic-gradient(${parts.join(', ')})`
+}
+
+function donutBackground(items: { share: number }[], source: SourceKey): string {
+  return conicRing(
+    items.map((_, i) => segmentColor(source, i)),
+    items.map((b) => b.share),
+  )
 }
 
 // Shared by the ring's conic-gradient stops and the legend dots, so each
@@ -60,23 +71,20 @@ function segmentColor(source: SourceKey, index: number): string {
 }
 
 // The inverse breakdown (per meal type, by source) mixes three genuinely
-// different categories in one ring rather than one source at varying
-// counts, so each wedge gets its source's full-strength color instead of a
-// shared hue at different opacities.
-function sourceRgb(key: string): string {
-  return SOURCE_RGB[key as SourceKey]
+// different categories in one ring — rather than giving each its own hue
+// (which meant a wedge boundary could still land green-next-to-blue), it
+// uses the same single-hue-at-decreasing-opacity treatment as the source
+// panel above, keyed by rank instead of by source.
+function typeSegmentColor(index: number): string {
+  const opacity = SEGMENT_OPACITIES[index] ?? SEGMENT_OPACITIES[SEGMENT_OPACITIES.length - 1]
+  return `rgba(${SOURCE_RGB.home}, ${opacity})`
 }
 
-function sourceDonutBackground(sources: { key: string; share: number }[]): string {
-  if (!sources.length) return 'var(--bg-elevated)'
-  let cursor = 0
-  const stops = sources.map((s) => {
-    const start = cursor
-    const end = cursor + s.share * 100
-    cursor = end
-    return `rgb(${sourceRgb(s.key)}) ${start}% ${end}%`
-  })
-  return `conic-gradient(${stops.join(', ')})`
+function sourceDonutBackground(sources: { share: number }[]): string {
+  return conicRing(
+    sources.map((_, i) => typeSegmentColor(i)),
+    sources.map((s) => s.share),
+  )
 }
 </script>
 
@@ -184,8 +192,8 @@ function sourceDonutBackground(sources: { key: string; share: number }[]): strin
             <div class="type-detail">
               <div class="type-detail-donut" :style="{ background: sourceDonutBackground(t.sources) }"></div>
               <ul class="type-detail-legend">
-                <li v-for="s in t.sources" :key="s.key">
-                  <span class="type-detail-dot" :style="{ background: `rgb(${sourceRgb(s.key)})` }"></span>
+                <li v-for="(s, i) in t.sources" :key="s.key">
+                  <span class="type-detail-dot" :style="{ background: typeSegmentColor(i) }"></span>
                   {{ s.label }} {{ Math.round(s.share * 100) }}%
                 </li>
               </ul>
