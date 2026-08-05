@@ -72,8 +72,19 @@ export interface InsightsTypeSourceBreakdown {
   sources: { key: string; label: string; count: number; share: number }[]
 }
 
+export interface InsightsFavouriteDish {
+  name: string
+  count: number
+  sources?: { home: number; ordered: number; ateOut: number }
+}
+
 export interface InsightsReport {
-  mostCooked: { name: string; count: number; sources: { home: number; ordered: number; ateOut: number } }[]
+  favourites: {
+    all: InsightsFavouriteDish[]
+    byType: Record<string, InsightsFavouriteDish[]>
+    ordered: InsightsFavouriteDish[]
+    ateOut: InsightsFavouriteDish[]
+  }
   repeatWarnings: { label: string; name: string; count: number; total: number; share: number }[]
   varietyByType: { type: string; label: string; unique: number; total: number }[]
   sourceBreakdown: { home: number; ordered: number; ateOut: number; total: number }

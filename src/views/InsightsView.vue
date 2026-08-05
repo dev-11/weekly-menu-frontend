@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { getInsights } from '../api/menuApi'
 import type { InsightsReport } from '../api/menuApi'
 
@@ -7,6 +7,34 @@ import type { InsightsReport } from '../api/menuApi'
 const report = ref<InsightsReport | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
+
+const favouriteFilter = ref('all')
+
+const SLOT_TYPE_LABELS: Record<string, string> = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+  dessert: 'Dessert',
+}
+const SLOT_TYPE_ORDER = ['breakfast', 'lunch', 'dinner', 'dessert']
+
+// Only meal types with actual history show up as chips — no point offering
+// a "Dessert" filter that would just render an empty list.
+const mealTypeFilters = computed(() => {
+  if (!report.value) return []
+  return SLOT_TYPE_ORDER.filter((t) => (report.value!.favourites.byType[t]?.length ?? 0) > 0).map((t) => ({
+    key: t,
+    label: SLOT_TYPE_LABELS[t],
+  }))
+})
+
+const favouritesList = computed(() => {
+  if (!report.value) return []
+  if (favouriteFilter.value === 'all') return report.value.favourites.all
+  if (favouriteFilter.value === 'ordered') return report.value.favourites.ordered
+  if (favouriteFilter.value === 'ateOut') return report.value.favourites.ateOut
+  return report.value.favourites.byType[favouriteFilter.value] ?? []
+})
 
 onMounted(async () => {
   loading.value = true
@@ -108,24 +136,68 @@ function sourceDonutBackground(sources: { share: number }[]): string {
 
     <p v-if="loading" class="hint">Loading…</p>
     <p v-else-if="error" class="hint error">{{ error }}</p>
-    <p v-else-if="report && report.mostCooked.length === 0" class="hint">Plan a few weeks to see insights here.</p>
+    <p v-else-if="report && report.favourites.all.length === 0" class="hint">Plan a few weeks to see insights here.</p>
 
     <template v-else-if="report">
       <section class="panel">
-        <h2>Most cooked</h2>
+        <h2>Favourites</h2>
+        <div class="fav-filters">
+          <div class="fav-filter-row">
+            <button
+              type="button"
+              class="fav-chip"
+              :class="{ active: favouriteFilter === 'all' }"
+              @click="favouriteFilter = 'all'"
+            >
+              All
+            </button>
+            <button
+              v-for="f in mealTypeFilters"
+              :key="f.key"
+              type="button"
+              class="fav-chip"
+              :class="{ active: favouriteFilter === f.key }"
+              @click="favouriteFilter = f.key"
+            >
+              {{ f.label }}
+            </button>
+          </div>
+          <div class="fav-filter-row">
+            <button
+              type="button"
+              class="fav-chip ordered"
+              :class="{ active: favouriteFilter === 'ordered' }"
+              @click="favouriteFilter = 'ordered'"
+            >
+              Orders
+            </button>
+            <button
+              type="button"
+              class="fav-chip ateOut"
+              :class="{ active: favouriteFilter === 'ateOut' }"
+              @click="favouriteFilter = 'ateOut'"
+            >
+              Eat out
+            </button>
+          </div>
+        </div>
         <ul class="rank-list">
           <li
-            v-for="(d, i) in report.mostCooked"
+            v-for="(d, i) in favouritesList"
             :key="d.name"
             class="rank-item"
-            :class="{ ordered: d.sources.ordered, ateOut: d.sources.ateOut }"
+            :class="{
+              ordered: d.sources?.ordered || favouriteFilter === 'ordered',
+              ateOut: d.sources?.ateOut || favouriteFilter === 'ateOut',
+            }"
           >
             <span class="rank-index">{{ i + 1 }}</span>
             <span class="rank-name">{{ d.name }}</span>
-            <span v-if="d.sources.ordered" class="rank-badge ordered">Order</span>
-            <span v-if="d.sources.ateOut" class="rank-badge ateOut">Eat out</span>
+            <span v-if="d.sources?.ordered || favouriteFilter === 'ordered'" class="rank-badge ordered">Order</span>
+            <span v-if="d.sources?.ateOut || favouriteFilter === 'ateOut'" class="rank-badge ateOut">Eat out</span>
             <span class="rank-count">{{ d.count }}×</span>
           </li>
+          <li v-if="favouritesList.length === 0" class="hint small">Nothing here yet.</li>
         </ul>
       </section>
 
@@ -267,6 +339,45 @@ h1 {
   font-size: 1rem;
   margin: 0 0 0.75rem;
   color: var(--text-h);
+}
+
+.fav-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.fav-filter-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.fav-chip {
+  border: 1px solid var(--border-muted);
+  background: none;
+  color: var(--text);
+  font-size: 0.8rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.fav-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.fav-chip.ordered.active {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.fav-chip.ateOut.active {
+  background: #0369a1;
+  border-color: #0369a1;
 }
 
 .rank-list,
