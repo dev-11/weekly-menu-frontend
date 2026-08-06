@@ -223,30 +223,6 @@ onUnmounted(() => {
   background: #0369a1;
 }
 
-.week-nav-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.week-nav .this-week-btn {
-  font-size: 0.8rem;
-  line-height: 1;
-  font-weight: 600;
-  padding: 0.4rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  color: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.week-nav .this-week-btn:hover {
-  background: var(--accent-bg);
-  color: var(--accent);
-}
-
 .hint {
   opacity: 0.7;
 }
