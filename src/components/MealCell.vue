@@ -4,7 +4,7 @@ import { unfurlTitle } from '../api/menuApi'
 import type { MealEntry, MealSource } from '../types/menu'
 import { isLikelyUrl } from '../utils/week'
 
-const props = defineProps<{ meal: MealEntry }>()
+const props = defineProps<{ meal: MealEntry; today?: boolean }>()
 const emit = defineEmits<{ (e: 'commit'): void }>()
 
 const editing = ref(false)
@@ -96,7 +96,7 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 </script>
 
 <template>
-  <div ref="cellRoot" class="cell" :class="[`source-${meal.source}`, { filled: !!meal.dish }]" @focusout="onFocusOut">
+  <div ref="cellRoot" class="cell" :class="[`source-${meal.source}`, { filled: !!meal.dish, today }]" @focusout="onFocusOut">
     <div v-if="!editing" class="cell-view" tabindex="0" @click="startEdit" @keydown.enter="startEdit">
       <span v-if="dishIsLink" class="dish is-link" :title="meal.dish">{{ meal.title || meal.dish }}</span>
       <span v-else-if="meal.dish" class="dish">{{ meal.dish }}</span>
@@ -170,20 +170,19 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   border-color: var(--border);
 }
 
-.cell.source-ordered .cell-view,
-.cell.source-ordered .cell-input {
-  border-color: #16a34a;
+/* A lighter, translucent tint of --accent rather than the solid --accent
+   itself — that solid color already means "hover/focus/editing" below, so
+   reusing it here would make today's cells look permanently focused. Only
+   targets .cell-view (the at-rest state), not .cell-input — while actively
+   editing, the normal solid accent border should show same as any other day. */
+.cell.today .cell-view {
+  border-color: var(--accent-border);
 }
 
-.cell.source-ateOut .cell-view,
-.cell.source-ateOut .cell-input {
-  border-color: #0369a1;
-}
-
-/* Prefixed with .cell so this ties the specificity of the rules above instead
-   of losing to them — plain-text and ordered/eat-out cells used to swallow
-   this on hover because ".cell.filled .cell-view" (3 classes) outranked
-   ".cell-view:hover" (2 classes), so only empty cells ever showed it. */
+/* Prefixed with .cell so this ties the specificity of the rule above instead
+   of losing to it — filled cells used to swallow this on hover because
+   ".cell.filled .cell-view" (3 classes) outranked ".cell-view:hover"
+   (2 classes), so only empty cells ever showed it. */
 .cell .cell-view:hover,
 .cell .cell-view:focus-visible {
   background: var(--accent-bg);
@@ -193,9 +192,9 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 }
 
 /* One weight, one color, every dish, every source — order/eat-out is already
-   signaled clearly by the colored badge and border, so the text itself
-   doesn't also need to change; mixing bold and regular within the same grid
-   read as inconsistent rather than as meaningful emphasis. */
+   signaled clearly by the colored badge, so the text itself doesn't also
+   need to change; mixing bold and regular within the same grid read as
+   inconsistent rather than as meaningful emphasis. */
 .dish {
   font-size: 0.9rem;
   color: var(--text);

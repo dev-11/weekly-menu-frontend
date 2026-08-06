@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MealCell from '../components/MealCell.vue'
 import { useMenuStore } from '../stores/menu'
-import { addWeeks, countMealsBySource, dayMood, formatWeekRange, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
+import { addWeeks, countMealsBySource, dayMood, formatWeekRange, isToday, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
 
 const store = useMenuStore()
 const route = useRoute()
@@ -98,6 +98,7 @@ onUnmounted(() => {
               v-for="day in store.currentWeek.days"
               :key="day.date + mealType"
               :meal="day.meals[mealType]"
+              :today="isToday(day.date)"
               @commit="scheduleSave"
             />
           </template>
@@ -121,7 +122,7 @@ onUnmounted(() => {
           </div>
           <div v-for="mealType in MEAL_TYPES" :key="mealType" class="meal-row">
             <span class="meal-row-label">{{ MEAL_LABELS[mealType] }}</span>
-            <MealCell class="meal-row-cell" :meal="day.meals[mealType]" @commit="scheduleSave" />
+            <MealCell class="meal-row-cell" :meal="day.meals[mealType]" :today="isToday(day.date)" @commit="scheduleSave" />
           </div>
         </div>
 

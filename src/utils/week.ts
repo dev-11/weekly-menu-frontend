@@ -53,6 +53,10 @@ export function weekdayLabel(dateStr: string): string {
   return WEEKDAY_LABELS[(new Date(dateStr).getDay() + 6) % 7]!
 }
 
+export function isToday(dateStr: string): boolean {
+  return dateStr === toISO(new Date())
+}
+
 export function countMealsBySource(week: WeekMenu, source: MealSource): number {
   const dayCount = week.days.reduce(
     (sum, day) => sum + Object.values(day.meals).filter((m) => m.source === source).length,
