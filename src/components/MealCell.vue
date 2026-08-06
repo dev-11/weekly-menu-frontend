@@ -346,7 +346,7 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
   /* Deliberately 16px, not 0.9rem like .dish — iOS Safari auto-zooms the page
      on focus for any input under 16px, which shoves the cell off-screen. */
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
   background: var(--bg-elevated);
   border: 1px solid var(--accent);
 }
