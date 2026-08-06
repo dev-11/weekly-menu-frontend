@@ -73,8 +73,8 @@ onUnmounted(() => {
           <span v-if="orderedCount" class="source-badge ordered">{{ orderedCount }} order</span>
           <span v-if="ateOutCount" class="source-badge ateOut">{{ ateOutCount }} eat out</span>
         </div>
-        <button v-if="!isCurrentWeek" type="button" class="link" @click="goToThisWeek">
-          Back to this week
+        <button v-if="!isCurrentWeek" type="button" class="this-week-link" @click="goToThisWeek">
+          Go to this week
         </button>
       </div>
       <button type="button" @click="goToWeek(1)" aria-label="Next week">›</button>
@@ -159,7 +159,7 @@ onUnmounted(() => {
   margin-bottom: 1.5rem;
 }
 
-.week-nav button {
+.week-nav > button {
   font-size: 1.25rem;
   line-height: 1;
   padding: 0.4rem 0.75rem;
@@ -179,6 +179,27 @@ onUnmounted(() => {
 
 .week-label strong {
   color: var(--text-h);
+  white-space: nowrap;
+}
+
+.this-week-link {
+  /* Same soft pill History uses for its (static) "This week" tag, just
+     made clickable — reuses the app's existing "this week" visual
+     language instead of introducing a fourth, unrelated button style. */
+  border: none;
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  cursor: pointer;
+}
+
+.this-week-link:hover {
+  background: var(--accent);
+  color: white;
 }
 
 .week-counts {
@@ -202,13 +223,28 @@ onUnmounted(() => {
   background: #0369a1;
 }
 
-.link {
-  border: none;
-  background: none;
-  color: var(--accent);
-  font-size: 0.85rem;
-  padding: 0;
+.week-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.week-nav .this-week-btn {
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: inherit;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.week-nav .this-week-btn:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .hint {
