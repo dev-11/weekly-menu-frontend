@@ -167,7 +167,9 @@ h1 {
 }
 
 .week-item.is-current {
-  border: 1px solid var(--accent);
+  /* Same token as Plan's "today" cell border (see MealCell.vue) — not the
+     solid --accent, which is reserved for hover/focus/interactive states. */
+  border: 1px solid var(--accent-border);
 }
 
 .current-tag {
