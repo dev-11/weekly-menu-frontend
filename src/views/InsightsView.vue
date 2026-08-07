@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { getInsights } from '../api/menuApi'
 import type { InsightsReport } from '../api/menuApi'
+import { isLikelyUrl } from '../utils/week'
 
 
 const report = ref<InsightsReport | null>(null)
@@ -192,7 +193,17 @@ function sourceDonutBackground(sources: { share: number }[]): string {
             }"
           >
             <span class="rank-index">{{ i + 1 }}</span>
-            <span class="rank-name">{{ d.name }}</span>
+            <span class="rank-name"
+              ><a
+                v-if="isLikelyUrl(d.name)"
+                class="dish-link"
+                :href="d.name"
+                target="_blank"
+                rel="noopener noreferrer"
+                :title="d.name"
+                >{{ d.name }}</a
+              ><template v-else>{{ d.name }}</template></span
+            >
             <span v-if="d.sources?.ordered || favouriteFilter === 'ordered'" class="rank-badge ordered">Order</span>
             <span v-if="d.sources?.ateOut || favouriteFilter === 'ateOut'" class="rank-badge ateOut">Eat out</span>
             <span class="rank-count">{{ d.count }}×</span>
@@ -205,7 +216,17 @@ function sourceDonutBackground(sources: { share: number }[]): string {
         <h2>Getting repetitive</h2>
         <ul class="warning-list">
           <li v-for="w in report.repeatWarnings" :key="w.label + w.name" class="warning-item">
-            <strong>{{ w.name }}</strong> is {{ w.count }} of your last {{ w.total }} {{ w.label.toLowerCase() }}s
+            <strong
+              ><a
+                v-if="isLikelyUrl(w.name)"
+                class="dish-link"
+                :href="w.name"
+                target="_blank"
+                rel="noopener noreferrer"
+                :title="w.name"
+                >{{ w.name }}</a
+              ><template v-else>{{ w.name }}</template></strong
+            > is {{ w.count }} of your last {{ w.total }} {{ w.label.toLowerCase() }}s
             ({{ Math.round(w.share * 100) }}%)
           </li>
         </ul>
@@ -294,7 +315,17 @@ function sourceDonutBackground(sources: { share: number }[]): string {
           Tried once, never repeated — might mean it didn't land, or just hasn't come back around yet.
         </p>
         <div class="chip-list">
-          <span v-for="d in report.onlyOnce" :key="d.name" class="chip">{{ d.name }}</span>
+          <span v-for="d in report.onlyOnce" :key="d.name" class="chip"
+            ><a
+              v-if="isLikelyUrl(d.name)"
+              class="dish-link"
+              :href="d.name"
+              target="_blank"
+              rel="noopener noreferrer"
+              :title="d.name"
+              >{{ d.name }}</a
+            ><template v-else>{{ d.name }}</template></span
+          >
         </div>
       </section>
     </template>
@@ -418,6 +449,15 @@ h1 {
 .rank-name {
   flex: 1;
   color: var(--text-h);
+}
+
+/* Same treatment as a linked dish on Plan/History (MealCell.vue, HistoryView.vue)
+   — inherits whatever weight/color its container already sets, just adds the
+   underline + accent tint that marks it as clickable. */
+.dish-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .rank-count {
