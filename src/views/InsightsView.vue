@@ -2,7 +2,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { getInsights } from '../api/menuApi'
 import type { InsightsReport } from '../api/menuApi'
-import { isLikelyUrl } from '../utils/week'
 
 
 const report = ref<InsightsReport | null>(null)
@@ -195,12 +194,12 @@ function sourceDonutBackground(sources: { share: number }[]): string {
             <span class="rank-index">{{ i + 1 }}</span>
             <span class="rank-name"
               ><a
-                v-if="isLikelyUrl(d.name)"
+                v-if="d.url"
                 class="dish-link"
-                :href="d.name"
+                :href="d.url"
                 target="_blank"
                 rel="noopener noreferrer"
-                :title="d.name"
+                :title="d.url"
                 >{{ d.name }}</a
               ><template v-else>{{ d.name }}</template></span
             >
@@ -218,12 +217,12 @@ function sourceDonutBackground(sources: { share: number }[]): string {
           <li v-for="w in report.repeatWarnings" :key="w.label + w.name" class="warning-item">
             <strong
               ><a
-                v-if="isLikelyUrl(w.name)"
+                v-if="w.url"
                 class="dish-link"
-                :href="w.name"
+                :href="w.url"
                 target="_blank"
                 rel="noopener noreferrer"
-                :title="w.name"
+                :title="w.url"
                 >{{ w.name }}</a
               ><template v-else>{{ w.name }}</template></strong
             > is {{ w.count }} of your last {{ w.total }} {{ w.label.toLowerCase() }}s
@@ -317,12 +316,12 @@ function sourceDonutBackground(sources: { share: number }[]): string {
         <div class="chip-list">
           <span v-for="d in report.onlyOnce" :key="d.name" class="chip"
             ><a
-              v-if="isLikelyUrl(d.name)"
+              v-if="d.url"
               class="dish-link"
-              :href="d.name"
+              :href="d.url"
               target="_blank"
               rel="noopener noreferrer"
-              :title="d.name"
+              :title="d.url"
               >{{ d.name }}</a
             ><template v-else>{{ d.name }}</template></span
           >

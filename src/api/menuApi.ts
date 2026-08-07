@@ -74,6 +74,10 @@ export interface InsightsTypeSourceBreakdown {
 
 export interface InsightsFavouriteDish {
   name: string
+  // The dish's raw URL, present whenever it was saved as a link — even once
+  // its title has resolved to display text, same as MealEntry keeps `dish`
+  // (the link) separate from `title` (what's shown).
+  url: string | null
   count: number
   sources?: { home: number; ordered: number; ateOut: number }
 }
@@ -85,7 +89,7 @@ export interface InsightsReport {
     ordered: InsightsFavouriteDish[]
     ateOut: InsightsFavouriteDish[]
   }
-  repeatWarnings: { label: string; name: string; count: number; total: number; share: number }[]
+  repeatWarnings: { label: string; name: string; url: string | null; count: number; total: number; share: number }[]
   varietyByType: { type: string; label: string; unique: number; total: number }[]
   sourceBreakdown: { home: number; ordered: number; ateOut: number; total: number }
   sourceByType: {
@@ -94,7 +98,7 @@ export interface InsightsReport {
     ateOut: InsightsSourceTypeBreakdown[]
   }
   typeSourceBreakdown: InsightsTypeSourceBreakdown[]
-  onlyOnce: { name: string }[]
+  onlyOnce: { name: string; url: string | null }[]
 }
 
 export async function getInsights(): Promise<InsightsReport> {
