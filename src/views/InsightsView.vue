@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { getInsights } from '../api/menuApi'
 import type { InsightsReport } from '../api/menuApi'
+import LoadingState from '../components/LoadingState.vue'
 
 
 const report = ref<InsightsReport | null>(null)
@@ -134,7 +135,7 @@ function sourceDonutBackground(sources: { share: number }[]): string {
   <section class="insights">
     <h1>Insights</h1>
 
-    <p v-if="loading" class="hint">Loading…</p>
+    <LoadingState v-if="loading" />
     <p v-else-if="error" class="hint error">{{ error }}</p>
     <p v-else-if="report && report.favourites.all.length === 0" class="hint">Plan a few weeks to see insights here.</p>
 

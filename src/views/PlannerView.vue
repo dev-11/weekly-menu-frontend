@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import LoadingState from '../components/LoadingState.vue'
 import MealCell from '../components/MealCell.vue'
 import { useMenuStore } from '../stores/menu'
 import { addWeeks, countMealsBySource, dayMood, formatWeekRange, isToday, MEAL_LABELS, MEAL_TYPES, toISO, weekStartFor, weekdayLabel } from '../utils/week'
@@ -92,7 +93,7 @@ onUnmounted(() => {
       <button type="button" @click="goToWeek(1)" aria-label="Next week">›</button>
     </header>
 
-    <p v-if="store.loading" class="hint">Loading…</p>
+    <LoadingState v-if="store.loading" />
     <p v-else-if="store.error" class="hint error">{{ store.error }}</p>
 
     <template v-else-if="store.currentWeek">

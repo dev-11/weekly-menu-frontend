@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import LoadingState from '../components/LoadingState.vue'
 import type { DayMenu, MealSource, WeekMenu } from '../types/menu'
 import { useMenuStore } from '../stores/menu'
 import { countMealsBySource, dayMood, formatWeekRange, isLikelyUrl, MEAL_LABELS, MEAL_TYPES, toISO, weekStartFor, weekdayLabel } from '../utils/week'
@@ -49,7 +50,7 @@ function isEmptyWeek(week: WeekMenu) {
   <section class="history">
     <h1>Weekly history</h1>
 
-    <p v-if="store.loading" class="hint">Loading…</p>
+    <LoadingState v-if="store.loading" />
     <p v-else-if="store.error" class="hint error">{{ store.error }}</p>
     <p v-else-if="allWeeks.length === 0" class="hint">No weeks yet.</p>
 
