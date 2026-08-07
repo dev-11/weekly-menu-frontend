@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import type { DayMenu, MealSource, WeekMenu } from '../types/menu'
 import { useMenuStore } from '../stores/menu'
-import { countMealsBySource, dayMood, formatWeekRange, isLikelyUrl, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
+import { countMealsBySource, dayMood, formatWeekRange, isLikelyUrl, MEAL_LABELS, MEAL_TYPES, toISO, weekStartFor, weekdayLabel } from '../utils/week'
 
 const SOURCE_LABEL: Record<MealSource, string> = { home: '', ordered: 'Order', ateOut: 'Eat out' }
 
@@ -18,24 +18,30 @@ function toggle(weekStart: string) {
   expanded.value[weekStart] = !expanded.value[weekStart]
 }
 
-function totalSlots(week: WeekMenu) {
-  return week.days.length * MEAL_TYPES.length + 1 // +1 for the shared weekend dessert
-}
-
-function filledCount(week: WeekMenu) {
-  const dayMeals = week.days.reduce(
-    (sum, d) => sum + Object.values(d.meals).filter((m) => m.dish.trim().length > 0).length,
-    0,
-  )
-  return dayMeals + (week.weekendDessert.dish.trim().length > 0 ? 1 : 0)
-}
-
 function mealsFor(day: DayMenu) {
   return MEAL_TYPES.map((type) => ({ type, meal: day.meals[type] })).filter(({ meal }) => meal.dish.trim())
 }
 
 function dayHasContent(day: DayMenu) {
   return Object.values(day.meals).some((m) => m.dish.trim())
+}
+
+// One chef per fully home-cooked day, Michelin-star style — reuses dayMood's
+// glyph rather than hardcoding the emoji again, so the two stay in sync.
+function chefDaysCount(week: WeekMenu) {
+  return week.days.filter((day) => dayMood(day) === '🧑‍🍳').length
+}
+
+// Same "only judge it once it's actually passed" rule as dayMood — a week
+// still in progress just hasn't been filled in yet, that's not the same as
+// a fully past week where nothing ever got planned.
+function isEmptyWeek(week: WeekMenu) {
+  const hasAnyDish =
+    week.days.some((day) => Object.values(day.meals).some((m) => m.dish.trim())) ||
+    week.weekendDessert.dish.trim().length > 0
+  if (hasAnyDish) return false
+  const lastDay = week.days[week.days.length - 1]
+  return !!lastDay && lastDay.date <= toISO(new Date())
 }
 </script>
 
@@ -54,16 +60,30 @@ function dayHasContent(day: DayMenu) {
         class="week-item"
         :class="{ 'is-current': week.weekStart === thisWeek }"
       >
-        <button type="button" class="week-summary" @click="toggle(week.weekStart)">
-          <span class="range">{{ formatWeekRange(week.weekStart) }}</span>
-          <span v-if="week.weekStart === thisWeek" class="current-tag">This week</span>
-          <span v-if="countMealsBySource(week, 'ordered')" class="source-badge ordered">
-            {{ countMealsBySource(week, 'ordered') }} order
-          </span>
-          <span v-if="countMealsBySource(week, 'ateOut')" class="source-badge ateOut">
-            {{ countMealsBySource(week, 'ateOut') }} eat out
-          </span>
-          <span class="count">{{ filledCount(week) }}/{{ totalSlots(week) }} planned</span>
+        <button
+          type="button"
+          class="week-summary"
+          :class="{ 'is-sparse': isEmptyWeek(week) }"
+          @click="toggle(week.weekStart)"
+        >
+          <div class="week-summary-content">
+            <span class="range">{{ formatWeekRange(week.weekStart) }}<span
+              v-if="chefDaysCount(week) && !expanded[week.weekStart]"
+              class="chef-rating"
+              :title="`${chefDaysCount(week)} home-cooked day${chefDaysCount(week) > 1 ? 's' : ''} this week`"
+            ><span v-for="n in chefDaysCount(week)" :key="n">🧑‍🍳</span></span><span
+              v-if="isEmptyWeek(week) && !expanded[week.weekStart]"
+              class="empty-week-mood"
+              title="Nothing planned this week"
+            >🕵️</span></span>
+            <span v-if="week.weekStart === thisWeek" class="current-tag">This week</span>
+            <span v-if="countMealsBySource(week, 'ordered')" class="source-badge ordered">
+              {{ countMealsBySource(week, 'ordered') }} order
+            </span>
+            <span v-if="countMealsBySource(week, 'ateOut')" class="source-badge ateOut">
+              {{ countMealsBySource(week, 'ateOut') }} eat out
+            </span>
+          </div>
           <span class="chevron" :class="{ open: expanded[week.weekStart] }">›</span>
         </button>
 
@@ -195,19 +215,35 @@ h1 {
   text-align: left;
 }
 
+/* Its own flex item, separate from .chevron — so when this wraps onto two
+   lines (badges below the date, see the mobile media query), align-items on
+   .week-summary centers the chevron against this whole block's height
+   instead of tying it to whichever line it happened to land on. */
+.week-summary-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .range {
   font-weight: 600;
   color: var(--text-h);
   flex: 1;
 }
 
-.count {
-  font-size: 0.85rem;
-  opacity: 0.7;
+.chef-rating {
+  margin-left: 0.35rem;
+  font-size: 1rem;
+}
+
+.empty-week-mood {
+  margin-left: 0.35rem;
+  font-size: 1rem;
 }
 
 .chevron {
-  margin-left: auto;
   font-size: 1.4rem;
   line-height: 1;
   color: var(--text-h);
@@ -355,14 +391,28 @@ h1 {
    and open up the day-list spacing so it doesn't feel crammed. */
 @media (max-width: 700px) {
   .week-summary {
+    padding: 1rem;
+  }
+
+  .week-summary-content {
     flex-wrap: wrap;
     row-gap: 0.6rem;
-    padding: 1rem;
   }
 
   .range {
     flex: 1 1 100%;
     font-size: 1.05rem;
+  }
+
+  /* An empty week has no badges/tag to wrap onto a second row — forcing the
+     date full-width here would leave the chevron stranded alone below it, so
+     keep this one row instead of following the wrap behavior above. */
+  .week-summary.is-sparse .week-summary-content {
+    flex-wrap: nowrap;
+  }
+
+  .week-summary.is-sparse .range {
+    flex: 1;
   }
 
   .day-list {
