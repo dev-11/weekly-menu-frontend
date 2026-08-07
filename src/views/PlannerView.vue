@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MealCell from '../components/MealCell.vue'
 import { useMenuStore } from '../stores/menu'
-import { addWeeks, countMealsBySource, dayMood, formatWeekRange, isToday, MEAL_LABELS, MEAL_TYPES, weekStartFor, weekdayLabel } from '../utils/week'
+import { addWeeks, countMealsBySource, dayMood, formatWeekRange, isToday, MEAL_LABELS, MEAL_TYPES, toISO, weekStartFor, weekdayLabel } from '../utils/week'
 
 const store = useMenuStore()
 const route = useRoute()
@@ -29,8 +29,20 @@ onMounted(() => {
   mq.addEventListener('change', mqHandler)
 })
 
+const sectionRef = ref<HTMLElement | null>(null)
+
 async function load() {
   await store.loadWeek(weekStart.value)
+  // Only meaningful on the day-list layout showing the current week — the
+  // desktop grid shows every day at once already, and scrolling to a day
+  // that isn't visible on-screen for a past/future week would be jarring.
+  if (isMobile.value && isCurrentWeek.value) {
+    await nextTick()
+    const todayISO = toISO(new Date())
+    sectionRef.value
+      ?.querySelector(`[data-date="${todayISO}"]`)
+      ?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }
 }
 
 function goToWeek(delta: number) {
@@ -64,7 +76,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="planner">
+  <section ref="sectionRef" class="planner">
     <header class="week-nav">
       <button type="button" @click="goToWeek(-1)" aria-label="Previous week">‹</button>
       <div class="week-label">
@@ -114,7 +126,7 @@ onUnmounted(() => {
       </div>
 
       <div v-else class="day-list">
-        <div v-for="day in store.currentWeek.days" :key="day.date" class="day-block">
+        <div v-for="day in store.currentWeek.days" :key="day.date" class="day-block" :data-date="day.date">
           <div class="day-block-heading-row">
             <h2 class="day-block-heading">
               {{ weekdayLabel(day.date) }}<span>{{ day.date.slice(5) }}</span><span v-if="dayMood(day)" class="day-mood">{{ dayMood(day) }}</span>
