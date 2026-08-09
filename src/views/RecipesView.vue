@@ -57,13 +57,15 @@ onMounted(async () => {
             d.name
           }}</a><template v-else>{{ d.name }}</template></span
         >
-        <span class="dish-count">{{ d.count }}×</span>
-        <span class="dish-last"
-          ><span
-            class="date-text"
-            :class="{ 'date-text-flagged': d.badge }"
-            :title="d.badge === 'thisWeek' ? 'This week' : d.badge === 'upcoming' ? 'Upcoming' : undefined"
-            >{{ d.lastCooked ? formatDate(d.lastCooked) : '—' }}</span
+        <span class="dish-stats"
+          ><span class="dish-count">{{ d.count }}×</span
+          ><span class="dish-last"
+            ><span
+              class="date-text"
+              :class="{ 'date-text-flagged': d.badge }"
+              :title="d.badge === 'thisWeek' ? 'This week' : d.badge === 'upcoming' ? 'Upcoming' : undefined"
+              >{{ d.lastCooked ? formatDate(d.lastCooked) : '—' }}</span
+            ></span
           ></span
         >
       </li>
@@ -118,6 +120,13 @@ h1 {
   color: var(--text-h);
 }
 
+.dish-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
 /* Same treatment as a linked dish everywhere else (MealCell.vue, HistoryView.vue,
    InsightsView.vue) — inherits this container's weight/color, just adds the
    underline + accent tint that marks it as clickable. */
@@ -157,25 +166,33 @@ h1 {
   font-style: italic;
 }
 
+/* Two columns, not a wrap to a second row — recipe name on the left (free
+   to wrap to multiple lines on its own), count + date stacked in a narrow
+   right column. Row height then just follows however tall the name gets,
+   instead of every row reserving a full second line whether it needs one
+   or not. */
 @media (max-width: 480px) {
   .dish-row {
-    flex-wrap: wrap;
+    align-items: flex-start;
   }
 
-  .dish-name {
-    flex: 1 1 100%;
+  .dish-stats {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
   }
 
-  /* The min-width + right-align on these exists to line them up as columns
-     against the desktop single-row layout — once .dish-name wraps above and
-     these are left as the only content on their own line, that same
-     min-width just leaves an empty gap inside the box before the
-     right-aligned text. Left-aligned and content-sized reads as one
-     compact line instead. */
+  /* Date first, count second — same DOM order as desktop (where left-to-right
+     order there is fine as-is), just reordered visually within this stacked
+     column since date is the emphasized stat on this page. */
+  .dish-last {
+    order: -1;
+  }
+
   .dish-count,
   .dish-last {
     min-width: 0;
-    text-align: left;
+    text-align: right;
   }
 }
 
