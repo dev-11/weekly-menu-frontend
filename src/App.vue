@@ -22,11 +22,13 @@ function toggleTheme() {
   <div id="app">
     <header class="top-nav">
       <h1 class="brand">Weekly Menu</h1>
-      <nav>
-        <router-link to="/">Plan</router-link>
-        <router-link to="/history">History</router-link>
-        <router-link to="/insights">Insights</router-link>
-        <router-link to="/recipes">Recipes</router-link>
+      <div class="nav-group">
+        <nav>
+          <router-link to="/">Plan</router-link>
+          <router-link to="/history">History</router-link>
+          <router-link to="/insights">Insights</router-link>
+          <router-link to="/recipes">Recipes</router-link>
+        </nav>
         <button
           type="button"
           class="theme-toggle"
@@ -36,7 +38,7 @@ function toggleTheme() {
         >
           {{ isDark ? '🌙' : '☀️' }}
         </button>
-      </nav>
+      </div>
     </header>
     <router-view />
   </div>
@@ -44,10 +46,14 @@ function toggleTheme() {
 
 <style scoped>
 .top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
+  background: var(--page-bg);
   border-bottom: 1px solid var(--border);
 }
 
@@ -56,6 +62,12 @@ function toggleTheme() {
   margin: 0;
   font-weight: 600;
   color: var(--text-h);
+}
+
+.nav-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 nav {
@@ -99,22 +111,28 @@ nav a.router-link-active {
 /* 4 links finally outgrew squeezing everything onto one row — shrinking
    padding/gap further just made links cramped without actually fitting.
    Wrapping nav onto its own full-width second row scales better as more
-   links get added later. */
+   links get added later. Links stay clustered with a small consistent gap
+   here (not stretched edge-to-edge) — space-between across four
+   uneven-length labels read as scattered rather than deliberate; only the
+   toggle is pushed off to the right, same grouping as desktop. */
 @media (max-width: 480px) {
   .top-nav {
     flex-wrap: wrap;
     row-gap: 0.6rem;
-    padding: 1rem 0.75rem;
+    padding: 0.85rem 1rem;
   }
 
   .brand {
     font-size: 1rem;
   }
 
-  nav {
+  .nav-group {
     width: 100%;
     justify-content: space-between;
-    gap: 0.1rem;
+  }
+
+  nav {
+    gap: 0.15rem;
   }
 
   nav a {

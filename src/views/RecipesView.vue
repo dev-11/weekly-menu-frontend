@@ -127,31 +127,33 @@ h1 {
   text-underline-offset: 2px;
 }
 
+/* Deliberately the quieter of the two stats — this page exists to surface
+   when a dish was last made, not how often, so "last cooked" (.date-text)
+   carries the emphasis instead. */
 .dish-count {
   flex-shrink: 0;
-  font-weight: 600;
-  color: var(--text-h);
-  font-size: 0.85rem;
+  color: var(--text);
+  opacity: 0.65;
+  font-size: 0.75rem;
   min-width: 2.2rem;
   text-align: right;
 }
 
 .dish-last {
   flex-shrink: 0;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   min-width: 6.5rem;
   text-align: right;
 }
 
 .date-text {
-  color: var(--text);
-  opacity: 0.7;
+  font-weight: 500;
+  color: var(--text-h);
 }
 
-/* "last cooked" can actually be a future-planned or this week's date
-    this quietly flags that */
+/* "last cooked" can actually be a future-planned or this week's date —
+   this quietly flags that */
 .date-text-flagged {
-  opacity: 1;
   font-style: italic;
 }
 
@@ -162,6 +164,18 @@ h1 {
 
   .dish-name {
     flex: 1 1 100%;
+  }
+
+  /* The min-width + right-align on these exists to line them up as columns
+     against the desktop single-row layout — once .dish-name wraps above and
+     these are left as the only content on their own line, that same
+     min-width just leaves an empty gap inside the box before the
+     right-aligned text. Left-aligned and content-sized reads as one
+     compact line instead. */
+  .dish-count,
+  .dish-last {
+    min-width: 0;
+    text-align: left;
   }
 }
 
