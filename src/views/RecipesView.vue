@@ -48,7 +48,7 @@ onMounted(async () => {
 
     <LoadingState v-if="loading" />
     <p v-else-if="error" class="hint error">{{ error }}</p>
-    <p v-else-if="dishes.length === 0" class="hint">No recipes yet.</p>
+    <p v-else-if="dishes.length === 0" class="hint">🧑‍🍳 Nothing home-cooked yet — get the stove going.</p>
 
     <ul v-else class="dish-list">
       <li v-for="d in rows" :key="d.name" class="dish-row">
