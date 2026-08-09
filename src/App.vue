@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const stored = localStorage.getItem('theme')
 const isDark = ref(
@@ -16,11 +16,36 @@ function toggleTheme() {
   localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
   applyTheme()
 }
+
+// Hides on scroll-down, reappears on scroll-up — lets a long page (Recipes
+// especially) use that space, without losing the header for more than a
+// scroll-up gesture. Always shown near the very top so it doesn't
+// disappear the moment a page loads or barely scrolls, and a small dead
+// zone on the delta absorbs iOS's rubber-band jitter at the scroll edges.
+const headerHidden = ref(false)
+let lastScrollY = 0
+
+function onScroll() {
+  const currentY = Math.max(0, window.scrollY)
+  if (currentY <= 80) {
+    headerHidden.value = false
+    lastScrollY = currentY
+    return
+  }
+  const delta = currentY - lastScrollY
+  if (Math.abs(delta) > 6) {
+    headerHidden.value = delta > 0
+    lastScrollY = currentY
+  }
+}
+
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
   <div id="app">
-    <header class="top-nav">
+    <header class="top-nav" :class="{ 'top-nav-hidden': headerHidden }">
       <h1 class="brand">Weekly Menu</h1>
       <div class="nav-group">
         <nav>
@@ -55,6 +80,11 @@ function toggleTheme() {
   padding: 1rem 1.5rem;
   background: var(--page-bg);
   border-bottom: 1px solid var(--border);
+  transition: transform 0.25s ease;
+}
+
+.top-nav-hidden {
+  transform: translateY(-100%);
 }
 
 .brand {
