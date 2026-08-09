@@ -310,7 +310,7 @@ function sourceDonutBackground(sources: { share: number }[]): string {
       </section>
 
       <section v-if="report.onlyOnce.length" class="panel">
-        <h2>Only made once</h2>
+        <h2>Only had it once</h2>
         <p class="hint small">
           Tried once, never repeated — might mean it didn't land, or just hasn't come back around yet.
         </p>
