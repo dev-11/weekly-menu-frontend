@@ -106,3 +106,18 @@ export async function getInsights(): Promise<InsightsReport> {
   if (!response.ok) throw new Error(`Failed to load insights: ${response.status}`)
   return response.json()
 }
+
+export interface HomeCookedDish {
+  name: string
+  url: string | null
+  count: number
+  // YYYY-MM-DD, or null if it was never cooked on a day with a real date
+  // (shouldn't happen in practice, but the dessert-date fallback isn't guaranteed).
+  lastCooked: string | null
+}
+
+export async function getHomeCookedDishes(): Promise<HomeCookedDish[]> {
+  const response = await fetch(`${API_BASE_URL}/recipes`)
+  if (!response.ok) throw new Error(`Failed to load home-cooked dishes: ${response.status}`)
+  return response.json()
+}

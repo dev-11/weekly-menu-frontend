@@ -74,6 +74,10 @@ export function formatWeekRange(weekStart: string): string {
   return `${startFmt} – ${endFmt}`
 }
 
+export function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 // A light-hearted, non-judgmental aside for days that lean entirely one way.
 // Shared by Plan (the current week, live) and History (every past week).
 // Just the glyph, no label or badge styling — a specific food emoji (pizza,

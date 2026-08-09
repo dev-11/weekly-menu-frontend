@@ -26,6 +26,7 @@ function toggleTheme() {
         <router-link to="/">Plan</router-link>
         <router-link to="/history">History</router-link>
         <router-link to="/insights">Insights</router-link>
+        <router-link to="/recipes">Recipes</router-link>
         <button
           type="button"
           class="theme-toggle"
@@ -95,10 +96,14 @@ nav a.router-link-active {
   }
 }
 
-/* A 3rd nav link (Insights) tipped this over — without tightening, "Weekly
-   Menu" wraps to two lines on a phone-width screen. */
-@media (max-width: 420px) {
+/* 4 links finally outgrew squeezing everything onto one row — shrinking
+   padding/gap further just made links cramped without actually fitting.
+   Wrapping nav onto its own full-width second row scales better as more
+   links get added later. */
+@media (max-width: 480px) {
   .top-nav {
+    flex-wrap: wrap;
+    row-gap: 0.6rem;
     padding: 1rem 0.75rem;
   }
 
@@ -107,11 +112,14 @@ nav a.router-link-active {
   }
 
   nav {
+    width: 100%;
+    justify-content: space-between;
     gap: 0.1rem;
   }
 
   nav a {
-    padding: 0.35rem 0.4rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.9rem;
   }
 }
 </style>
