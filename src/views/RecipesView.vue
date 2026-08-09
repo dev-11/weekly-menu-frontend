@@ -1,13 +1,33 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { getHomeCookedDishes } from '../api/menuApi'
 import type { HomeCookedDish } from '../api/menuApi'
 import LoadingState from '../components/LoadingState.vue'
-import { formatDate } from '../utils/week'
+import { datesInWeek, formatDate, toISO, weekStartFor } from '../utils/week'
 
 const dishes = ref<HomeCookedDish[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+
+const todayISO = toISO(new Date())
+const thisWeekDates = new Set(datesInWeek(weekStartFor()))
+
+type DateBadge = 'thisWeek' | 'upcoming' | null
+
+function dateBadge(dateStr: string | null): DateBadge {
+  if (!dateStr)
+    return null
+
+  if (thisWeekDates.has(dateStr))
+    return 'thisWeek'
+
+  if (dateStr > todayISO)
+    return 'upcoming'
+
+  return null
+}
+
+const rows = computed(() => dishes.value.map((d) => ({ ...d, badge: dateBadge(d.lastCooked) })))
 
 onMounted(async () => {
   loading.value = true
@@ -31,14 +51,21 @@ onMounted(async () => {
     <p v-else-if="dishes.length === 0" class="hint">No recipes yet.</p>
 
     <ul v-else class="dish-list">
-      <li v-for="d in dishes" :key="d.name" class="dish-row">
+      <li v-for="d in rows" :key="d.name" class="dish-row">
         <span class="dish-name"
           ><a v-if="d.url" class="dish-link" :href="d.url" target="_blank" rel="noopener noreferrer" :title="d.url">{{
             d.name
           }}</a><template v-else>{{ d.name }}</template></span
         >
         <span class="dish-count">{{ d.count }}×</span>
-        <span class="dish-last">{{ d.lastCooked ? formatDate(d.lastCooked) : '—' }}</span>
+        <span class="dish-last"
+          ><span
+            class="date-text"
+            :class="{ 'date-text-flagged': d.badge }"
+            :title="d.badge === 'thisWeek' ? 'This week' : d.badge === 'upcoming' ? 'Upcoming' : undefined"
+            >{{ d.lastCooked ? formatDate(d.lastCooked) : '—' }}</span
+          ></span
+        >
       </li>
     </ul>
   </section>
@@ -111,11 +138,21 @@ h1 {
 
 .dish-last {
   flex-shrink: 0;
-  color: var(--text);
-  opacity: 0.7;
   font-size: 0.8rem;
   min-width: 6.5rem;
   text-align: right;
+}
+
+.date-text {
+  color: var(--text);
+  opacity: 0.7;
+}
+
+/* "last cooked" can actually be a future-planned or this week's date
+    this quietly flags that */
+.date-text-flagged {
+  opacity: 1;
+  font-style: italic;
 }
 
 @media (max-width: 480px) {
