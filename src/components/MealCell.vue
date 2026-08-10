@@ -55,6 +55,81 @@ function cancel() {
   editing.value = false
 }
 
+// Long-press (touch only) copies the raw dish text to the clipboard — for a
+// link that's the URL itself, not whatever resolved title happens to be
+// showing, so pasting it elsewhere reuses the actual source rather than a
+// display label.
+const copied = ref(false)
+let copiedTimer: ReturnType<typeof setTimeout> | null = null
+let longPressTimer: ReturnType<typeof setTimeout> | null = null
+let longPressFired = false
+let touchStartX = 0
+let touchStartY = 0
+const LONG_PRESS_MS = 500
+const MOVE_CANCEL_PX = 10
+
+function onTouchStart(e: TouchEvent) {
+  if (editing.value || !props.meal.dish) return
+  const touch = e.touches[0]
+  if (!touch) return
+  touchStartX = touch.clientX
+  touchStartY = touch.clientY
+  longPressFired = false
+  longPressTimer = setTimeout(() => {
+    longPressFired = true
+    longPressTimer = null
+    copyMeal()
+  }, LONG_PRESS_MS)
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (!longPressTimer) return
+  const touch = e.touches[0]
+  if (!touch) return
+  if (Math.abs(touch.clientX - touchStartX) > MOVE_CANCEL_PX || Math.abs(touch.clientY - touchStartY) > MOVE_CANCEL_PX) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+// Not passive — a fired long-press needs to suppress the synthetic click
+// (and, on the link-open zone, the default navigation) that would otherwise
+// follow this same touch and immediately open editing or the link.
+function onTouchEnd(e: TouchEvent) {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+  if (longPressFired) {
+    e.preventDefault()
+    longPressFired = false
+  }
+}
+
+function onTouchCancel() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+  longPressFired = false
+}
+
+async function copyMeal() {
+  const text = props.meal.dish.trim()
+  if (!text) return
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    return
+  }
+  navigator.vibrate?.(15)
+  copied.value = true
+  if (copiedTimer) clearTimeout(copiedTimer)
+  copiedTimer = setTimeout(() => {
+    copied.value = false
+  }, 1200)
+}
+
 // Commit once focus has settled outside the cell. Deferred to the next frame because
 // swapping the view span for the input removes the just-focused element, which fires a
 // blur/focusout with relatedTarget null before the new input has taken focus.
@@ -96,8 +171,20 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 </script>
 
 <template>
-  <div ref="cellRoot" class="cell" :class="[`source-${meal.source}`, { filled: !!meal.dish, today }]" @focusout="onFocusOut">
+  <div
+    ref="cellRoot"
+    class="cell"
+    :class="[`source-${meal.source}`, { filled: !!meal.dish, today }]"
+    @focusout="onFocusOut"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend="onTouchEnd"
+    @touchcancel="onTouchCancel"
+  >
     <div v-if="!editing" class="cell-view" tabindex="0" @click="startEdit" @keydown.enter="startEdit">
+      <Transition name="copied-fade">
+        <span v-if="copied" class="copied-flag" aria-hidden="true">Copied</span>
+      </Transition>
       <span v-if="dishIsLink" class="dish is-link" :title="meal.dish">{{ meal.title || meal.dish }}</span>
       <span v-else-if="meal.dish" class="dish">{{ meal.dish }}</span>
       <span v-else class="placeholder">+ Add</span>
@@ -282,6 +369,35 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
 .placeholder {
   font-size: 0.85rem;
   opacity: 0.4;
+}
+
+/* Brief, self-dismissing confirmation for the long-press-to-copy gesture —
+   clipboard writes are otherwise silent, so without this there'd be no sign
+   anything happened at all. */
+.copied-flag {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.copied-fade-enter-active,
+.copied-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.copied-fade-enter-from,
+.copied-fade-leave-to {
+  opacity: 0;
 }
 
 .source-badge {
