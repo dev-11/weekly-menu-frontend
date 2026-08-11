@@ -1,7 +1,9 @@
 export type MealType = 'breakfast' | 'lunch' | 'dinner'
 
 // 'home' (default, no flag shown) | 'ordered' (ordered in / delivery) | 'ateOut' (ate at a restaurant)
-export type MealSource = 'home' | 'ordered' | 'ateOut'
+// | 'skipped' (deliberately left blank — only meaningful while dish is also
+// empty; a skipped slot with a dish filled in just behaves as that source).
+export type MealSource = 'home' | 'ordered' | 'ateOut' | 'skipped'
 
 export interface MealEntry {
   dish: string

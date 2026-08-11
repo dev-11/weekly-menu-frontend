@@ -69,7 +69,7 @@ const LONG_PRESS_MS = 500
 const MOVE_CANCEL_PX = 10
 
 function onTouchStart(e: TouchEvent) {
-  if (editing.value || !props.meal.dish) return
+  if (editing.value) return
   const touch = e.touches[0]
   if (!touch) return
   touchStartX = touch.clientX
@@ -78,7 +78,11 @@ function onTouchStart(e: TouchEvent) {
   longPressTimer = setTimeout(() => {
     longPressFired = true
     longPressTimer = null
-    copyMeal()
+    if (props.meal.dish) {
+      copyMeal()
+    } else {
+      setSkipped(props.meal.source !== 'skipped')
+    }
   }, LONG_PRESS_MS)
 }
 
@@ -130,6 +134,20 @@ async function copyMeal() {
   }, 1200)
 }
 
+// Only meaningful while dish is empty — marks the slot as deliberately left
+// blank rather than "haven't gotten to it yet", without needing any text
+// entered. Reachable via long-press (touch) or the hover-revealed pill
+// (desktop, see the @media (hover: hover) rules below).
+function setSkipped(skip: boolean) {
+  props.meal.source = skip ? 'skipped' : 'home'
+  emit('commit')
+}
+
+function toggleSkipClick(e: Event) {
+  e.stopPropagation()
+  setSkipped(props.meal.source !== 'skipped')
+}
+
 // Commit once focus has settled outside the cell. Deferred to the next frame because
 // swapping the view span for the input removes the just-focused element, which fires a
 // blur/focusout with relatedTarget null before the new input has taken focus.
@@ -140,22 +158,28 @@ function onFocusOut() {
   })
 }
 
+// 'skipped' entries here are dead code in practice — the badge that reads
+// these only renders when meal.dish is truthy (see template), and a skipped
+// meal never has one — but Record<MealSource, ...> requires every key.
 const SOURCE_CYCLE: Record<MealSource, MealSource> = {
   home: 'ordered',
   ordered: 'ateOut',
   ateOut: 'home',
+  skipped: 'home',
 }
 
 const SOURCE_LABEL: Record<MealSource, string> = {
   home: '',
   ordered: 'Order',
   ateOut: 'Eat out',
+  skipped: '',
 }
 
 const SOURCE_TITLE: Record<MealSource, string> = {
   home: 'Home cooked — click to flag as order or eat out',
   ordered: 'Order — click to change',
   ateOut: 'Eat out — click to reset to home cooked',
+  skipped: '',
 }
 
 const sourceLabel = computed(() => SOURCE_LABEL[props.meal.source])
@@ -168,6 +192,7 @@ function cycleSource(e: Event) {
 }
 
 const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
+const isSkipped = computed(() => props.meal.source === 'skipped')
 </script>
 
 <template>
@@ -187,7 +212,7 @@ const dishIsLink = computed(() => isLikelyUrl(props.meal.dish))
       </Transition>
       <span v-if="dishIsLink" class="dish is-link" :title="meal.dish">{{ meal.title || meal.dish }}</span>
       <span v-else-if="meal.dish" class="dish">{{ meal.dish }}</span>
-      <span v-else class="placeholder">+ Add</span>
+      <span v-else class="placeholder" :class="{ 'placeholder-skipped': isSkipped }">{{ isSkipped ? 'Skipped' : '+ Add' }}</span>
 
       <!-- Overlay layer, not part of the card's own box — the card underneath
            looks and sizes exactly like any other cell. Top opens the recipe,
