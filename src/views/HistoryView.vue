@@ -5,7 +5,9 @@ import type { DayMenu, MealSource, WeekMenu } from '../types/menu'
 import { useMenuStore } from '../stores/menu'
 import { countMealsBySource, dayMood, formatWeekRange, isLikelyUrl, MEAL_LABELS, MEAL_TYPES, toISO, weekStartFor, weekdayLabel } from '../utils/week'
 
-const SOURCE_LABEL: Record<MealSource, string> = { home: '', ordered: 'Order', ateOut: 'Eat out' }
+// 'skipped' is dead code here in practice — mealsFor()/dayHasContent() only
+// ever surface meals with dish text, and a skipped meal never has any.
+const SOURCE_LABEL: Record<MealSource, string> = { home: '', ordered: 'Order', ateOut: 'Eat out', skipped: '' }
 
 const store = useMenuStore()
 const thisWeek = weekStartFor()

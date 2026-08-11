@@ -239,6 +239,15 @@ const isSkipped = computed(() => props.meal.source === 'skipped')
       >
         {{ sourceLabel }}
       </button>
+
+      <!-- Desktop-only counterpart to the long-press gesture above (see the
+           @media (hover: hover) rules below) — touch devices never show
+           these, since real hover doesn't exist there and long-press
+           already covers the same two actions. -->
+      <button v-if="meal.dish" type="button" class="action-pill" title="Copy" @click.stop="copyMeal">Copy</button>
+      <button v-else type="button" class="action-pill" :title="isSkipped ? 'Unskip' : 'Mark as skipped'" @click="toggleSkipClick">
+        {{ isSkipped ? 'Unskip' : 'Skip' }}
+      </button>
     </div>
 
     <input
@@ -394,6 +403,59 @@ const isSkipped = computed(() => props.meal.source === 'skipped')
 .placeholder {
   font-size: 0.85rem;
   opacity: 0.4;
+}
+
+.placeholder-skipped {
+  opacity: 0.55;
+  font-style: italic;
+}
+
+/* Same diagonal hatching as the dessert row's "not applicable" cells (see
+   .cell-na in PlannerView.vue) — reusing that language here since both mean
+   the same thing: this slot is intentionally empty, not a to-do. */
+.cell.source-skipped .cell-view {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--border-muted) 0,
+    var(--border-muted) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  border-style: solid;
+  border-color: var(--border-muted);
+}
+
+/* Desktop counterpart to the touch long-press gesture — "Copy" on a filled
+   cell, "Skip"/"Unskip" on an empty one. Hidden entirely outside a real
+   hover+pointer environment (not just opacity:0) so it can't be tapped by
+   accident on touch devices, which already have their own gesture for this. */
+.action-pill {
+  position: absolute;
+  bottom: 0.3rem;
+  right: 0.3rem;
+  z-index: 1;
+  border: none;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--border-muted);
+  color: var(--text-h);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action-pill {
+    transition: opacity 0.15s ease;
+  }
+
+  .cell-view:hover .action-pill,
+  .cell-view:focus-within .action-pill {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 /* Brief, self-dismissing confirmation for the long-press-to-copy gesture —
